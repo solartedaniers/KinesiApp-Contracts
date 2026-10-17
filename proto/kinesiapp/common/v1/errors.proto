@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package kinesiapp.common.v1;
+
+// Motivo estable de un error de negocio. Cada error lleva un status code estándar de gRPC y, en sus
+// detalles, un google.rpc.ErrorInfo con:
+//   - domain = "kinesiapp"
+//   - reason = el nombre del valor sin el prefijo ERROR_REASON_ (por ejemplo "EMAIL_ALREADY_REGISTERED"),
+//     que es el mismo nombre del ErrorCode actual del backend.
+// El cliente traduce por reason, nunca por el mensaje. Al lado de cada valor anoto su status code.
+enum ErrorReason {
+  ERROR_REASON_UNSPECIFIED = 0;
+
+  // Genéricos: los uso cuando ningún motivo más concreto aplica.
+  ERROR_REASON_BAD_REQUEST = 1; // INVALID_ARGUMENT
+  ERROR_REASON_NOT_FOUND = 2; // NOT_FOUND
+  ERROR_REASON_CONFLICT = 3; // ALREADY_EXISTS o FAILED_PRECONDITION
+  ERROR_REASON_UNAUTHORIZED = 4; // UNAUTHENTICATED
+  ERROR_REASON_FORBIDDEN = 5; // PERMISSION_DENIED
+
+  // Cuenta y sesión.
+  ERROR_REASON_EMAIL_ALREADY_REGISTERED = 6; // ALREADY_EXISTS
+  ERROR_REASON_EMAIL_NOT_REGISTERED = 7; // UNAUTHENTICATED
+  ERROR_REASON_EMAIL_DOMAIN_UNDELIVERABLE = 8; // INVALID_ARGUMENT
+  ERROR_REASON_EMAIL_NOT_VERIFIED = 9; // PERMISSION_DENIED
+  ERROR_REASON_EMAIL_DELIVERY_FAILED = 10; // UNAVAILABLE
+  ERROR_REASON_INVALID_CREDENTIALS = 11; // UNAUTHENTICATED
+  ERROR_REASON_ACCOUNT_DISABLED = 12; // PERMISSION_DENIED
+  ERROR_REASON_INVALID_OTP = 13; // UNAUTHENTICATED
+  ERROR_REASON_INVALID_REFRESH_TOKEN = 14; // UNAUTHENTICATED
+  ERROR_REASON_PASSWORD_REUSED = 15; // ALREADY_EXISTS
+  // INVALID_ARGUMENT y no UNAUTHENTICATED: un UNAUTHENTICATED dispararía la renovación de la sesión.
+  ERROR_REASON_INVALID_CURRENT_PASSWORD = 16;
+  ERROR_REASON_CONSENT_REQUIRED = 17; // FAILED_PRECONDITION
+
+  // Administración.
+  ERROR_REASON_INVALID_ROLE_ASSIGNMENT = 18; // INVALID_ARGUMENT
+  ERROR_REASON_CANNOT_MODIFY_OWN_ACCOUNT = 19; // FAILED_PRECONDITION
+  ERROR_REASON_COACH_HAS_ATHLETES = 20; // FAILED_PRECONDITION
+
+  // Deportistas y equipos.
+  ERROR_REASON_PROFILE_ALREADY_EXISTS = 21; // ALREADY_EXISTS
+  ERROR_REASON_TEAM_NAME_TAKEN = 22; // ALREADY_EXISTS
+  ERROR_REASON_INVALID_TEAM_MEMBER = 23; // INVALID_ARGUMENT
+
+  // Archivos.
+  ERROR_REASON_STORAGE_UNAVAILABLE = 24; // UNAVAILABLE
+  ERROR_REASON_INVALID_VIDEO = 25; // INVALID_ARGUMENT
+  ERROR_REASON_VIDEO_TOO_LARGE = 26; // INVALID_ARGUMENT
+  // Nuevo: el límite de 40 s, que antes no se validaba en ningún lado.
+  ERROR_REASON_VIDEO_TOO_LONG = 27; // INVALID_ARGUMENT
+  // Nuevo: se confirmó una subida pero el objeto no está en el bucket o no coincide con lo pedido.
+  ERROR_REASON_UPLOAD_NOT_FOUND = 28; // FAILED_PRECONDITION
+  // Nuevo: la imagen no coincide con su tipo declarado o pasa el tamaño máximo.
+  ERROR_REASON_INVALID_IMAGE = 29; // INVALID_ARGUMENT
+
+  // Análisis.
+  ERROR_REASON_ANALYSIS_NOT_PROCESSED = 30; // FAILED_PRECONDITION
+  // Nuevos: hoy un análisis fallido no dice por qué. Van en Analysis.failure_reason.
+  ERROR_REASON_VIDEO_UNREADABLE = 31; // INVALID_ARGUMENT
+  ERROR_REASON_NO_MOVEMENT_DETECTED = 32; // FAILED_PRECONDITION
+  // Nuevo: el servicio de IA no respondió (dormido, caído o sin memoria).
+  ERROR_REASON_AI_UNAVAILABLE = 33; // UNAVAILABLE
+
+  // Chat.
+  ERROR_REASON_CHAT_RATE_LIMITED = 34; // RESOURCE_EXHAUSTED
+  ERROR_REASON_ASSISTANT_UNAVAILABLE = 35; // UNAVAILABLE
+}
