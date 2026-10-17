@@ -3,12 +3,26 @@ syntax = "proto3";
 package kinesiapp.system.v1;
 
 import "google/protobuf/timestamp.proto";
+import "kinesiapp/common/v1/ai_state.proto";
+import "kinesiapp/common/v1/identity.proto";
 
 // Servicio técnico del backend. Lo uso para comprobar de punta a punta que el transporte
 // (Next.js → gRPC-Web → Envoy → grpcio) funciona antes de montar los servicios de dominio.
 service SystemService {
   // Devuelve el mismo mensaje que recibe, con la hora del servidor.
-  rpc Ping(PingRequest) returns (PingResponse);
+  rpc Ping(PingRequest) returns (PingResponse) {
+    option (kinesiapp.common.v1.access) = {public: true};
+  }
+
+  // Los límites y reglas que el cliente valida antes de enviar, con los mismos valores que aplica el
+  // servidor. Así el frontend no los repite en su código. Es igual para todos y se puede cachear.
+  rpc GetClientPolicy(GetClientPolicyRequest) returns (GetClientPolicyResponse) {
+    option (kinesiapp.common.v1.access) = {public: true};
+  }
+
+  // El frontend lo llama al iniciar sesión para despertar la IA y mostrar "IA despertando" o "IA activada".
+  // Si la IA no responde, devuelvo UNAVAILABLE con reason AI_UNAVAILABLE.
+  rpc WakeUpAi(WakeUpAiRequest) returns (WakeUpAiResponse);
 }
 
 message PingRequest {
@@ -21,4 +35,46 @@ message PingResponse {
   string message = 1;
   // Momento en que el servidor atendió la llamada.
   google.protobuf.Timestamp server_time = 2;
+}
+
+message GetClientPolicyRequest {}
+
+message GetClientPolicyResponse {
+  // Versión vigente del texto de consentimiento de video: la que exigen el registro y la subida.
+  int32 video_consent_version = 1;
+  VideoPolicy video = 2;
+  int64 max_avatar_size_bytes = 3;
+  PasswordPolicy password = 4;
+  // Rango de edad admitido para la ficha de un deportista.
+  int32 athlete_min_age_years = 5;
+  int32 athlete_max_age_years = 6;
+  int32 chat_message_max_chars = 7;
+}
+
+message VideoPolicy {
+  // El límite de 40 s.
+  int32 max_duration_seconds = 1;
+  int64 max_size_bytes = 2;
+}
+
+enum PasswordRequirement {
+  PASSWORD_REQUIREMENT_UNSPECIFIED = 0;
+  PASSWORD_REQUIREMENT_UPPERCASE = 1;
+  PASSWORD_REQUIREMENT_LOWERCASE = 2;
+  PASSWORD_REQUIREMENT_DIGIT = 3;
+  PASSWORD_REQUIREMENT_SPECIAL_CHARACTER = 4;
+}
+
+// Política de contraseñas nuevas (registro, recuperación y cambio).
+message PasswordPolicy {
+  int32 min_length = 1;
+  int32 max_length = 2;
+  // Cada clase de caracter debe aparecer al menos una vez, en el orden en que se informan las que faltan.
+  repeated PasswordRequirement requirements = 3;
+}
+
+message WakeUpAiRequest {}
+
+message WakeUpAiResponse {
+  kinesiapp.common.v1.AiState state = 1;
 }
