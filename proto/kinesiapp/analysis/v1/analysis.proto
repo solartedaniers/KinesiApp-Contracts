@@ -1,0 +1,167 @@
+syntax = "proto3";
+
+package kinesiapp.analysis.v1;
+
+import "google/protobuf/timestamp.proto";
+import "kinesiapp/common/v1/errors.proto";
+import "kinesiapp/common/v1/identity.proto";
+import "kinesiapp/common/v1/movement.proto";
+import "kinesiapp/common/v1/pagination.proto";
+import "kinesiapp/common/v1/storage.proto";
+
+// Análisis de movimiento: subida del video, seguimiento del procesamiento y resultados.
+// Quién puede qué:
+//   - Ver: el propio deportista, su coach asignado y el admin.
+//   - Subir y borrar: el propio deportista; en un deportista gestionado, su coach. El admin también borra.
+service AnalysisService {
+  // Paso 1 de la subida: compruebo permisos y consentimiento antes de que el navegador mande un solo byte,
+  // y devuelvo una URL firmada para subir el video directo al bucket privado.
+  rpc CreateVideoUpload(CreateVideoUploadRequest) returns (CreateVideoUploadResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [
+        USER_ROLE_ATHLETE,
+        USER_ROLE_COACH
+      ]
+    };
+  }
+
+  // Paso 2: el navegador avisa que terminó de subir. Compruebo que el objeto existe y cuadra con lo pedido,
+  // creo el análisis en PENDING y lo mando a procesar. No espero al resultado.
+  rpc ConfirmVideoUpload(ConfirmVideoUploadRequest) returns (ConfirmVideoUploadResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [
+        USER_ROLE_ATHLETE,
+        USER_ROLE_COACH
+      ]
+    };
+  }
+
+  // Server streaming: reemplaza el polling. Emite el progreso mientras el análisis corre y termina con un
+  // último mensaje con el análisis ya PROCESSED o FAILED. Si ya había terminado, lo emite de inmediato y cierra.
+  rpc WatchAnalysis(WatchAnalysisRequest) returns (stream WatchAnalysisResponse);
+
+  // El análisis completo, con las series de ángulos y el resultado de riesgo.
+  rpc GetAnalysis(GetAnalysisRequest) returns (GetAnalysisResponse);
+
+  // Los análisis de un deportista, del más reciente al más antiguo y sin las series de ángulos.
+  rpc ListAthleteAnalyses(ListAthleteAnalysesRequest) returns (ListAthleteAnalysesResponse);
+
+  // Los análisis de todos los deportistas que entrena o gestiona el coach que llama.
+  rpc ListCoachedAnalyses(ListCoachedAnalysesRequest) returns (ListCoachedAnalysesResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [USER_ROLE_COACH]
+    };
+  }
+
+  // Borra el análisis, sus mediciones, su conversación y su video del bucket.
+  rpc DeleteAnalysis(DeleteAnalysisRequest) returns (DeleteAnalysisResponse);
+
+  // URL firmada de vida corta para reproducir el video; el bucket atiende Range, así se puede adelantar.
+  rpc GetVideoPlaybackUrl(GetVideoPlaybackUrlRequest) returns (GetVideoPlaybackUrlResponse);
+}
+
+// Lo que muestran los listados.
+message AnalysisSummary {
+  int64 id = 1;
+  int64 athlete_id = 2;
+  kinesiapp.common.v1.MovementType movement_type = 3;
+  kinesiapp.common.v1.AnalysisStatus status = 4;
+  google.protobuf.Timestamp recorded_at = 5;
+  // Presentes solo en PROCESSED.
+  optional double risk_score = 6;
+  kinesiapp.common.v1.RiskLevel risk_level = 7;
+  optional string dominant_risk_pattern = 8;
+  // Solo en FAILED: por qué falló (VIDEO_UNREADABLE, NO_MOVEMENT_DETECTED, AI_UNAVAILABLE...).
+  kinesiapp.common.v1.ErrorReason failure_reason = 9;
+}
+
+message Analysis {
+  AnalysisSummary summary = 1;
+  // Ángulo por frame de cada articulación medida, en orden temporal.
+  repeated kinesiapp.common.v1.JointAngleSample angle_samples = 2;
+  // Ausente en análisis anteriores a que existiera el detalle de riesgo.
+  optional kinesiapp.common.v1.RiskAssessment risk_assessment = 3;
+  // Versiones de los modelos con que se calculó; las guardo para poder comparar resultados entre versiones.
+  optional string pose_model_version = 4;
+  optional string risk_model_version = 5;
+}
+
+message CreateVideoUploadRequest {
+  int64 athlete_id = 1;
+  kinesiapp.common.v1.MovementType movement_type = 2;
+  // Debe empezar por "video/" (INVALID_VIDEO).
+  string content_type = 3;
+  // Tamaño exacto en bytes, hasta el máximo de SystemService.GetClientPolicy (VIDEO_TOO_LARGE).
+  int64 content_length = 4;
+  // Duración que leyó el Web Worker del navegador. Rechazo de entrada lo que pase el máximo
+  // (VIDEO_TOO_LONG); la IA vuelve a medirla sobre el archivo real.
+  int32 duration_ms = 5;
+}
+
+message CreateVideoUploadResponse {
+  // Identificador opaco y firmado de esta subida: lleva el deportista, el movimiento y la clave del objeto,
+  // así no creo filas de análisis para subidas que nunca terminan.
+  string upload_id = 1;
+  kinesiapp.common.v1.UploadTarget target = 2;
+}
+
+message ConfirmVideoUploadRequest {
+  string upload_id = 1;
+}
+
+message ConfirmVideoUploadResponse {
+  AnalysisSummary analysis = 1;
+}
+
+message WatchAnalysisRequest {
+  int64 analysis_id = 1;
+}
+
+message WatchAnalysisResponse {
+  oneof event {
+    kinesiapp.common.v1.AnalysisProgress progress = 1;
+    // Siempre el último mensaje del stream.
+    AnalysisSummary finished = 2;
+  }
+}
+
+message GetAnalysisRequest {
+  int64 analysis_id = 1;
+}
+
+message GetAnalysisResponse {
+  Analysis analysis = 1;
+}
+
+message ListAthleteAnalysesRequest {
+  int64 athlete_id = 1;
+  kinesiapp.common.v1.PageRequest page = 2;
+}
+
+message ListAthleteAnalysesResponse {
+  repeated AnalysisSummary analyses = 1;
+  kinesiapp.common.v1.PageResponse page = 2;
+}
+
+message ListCoachedAnalysesRequest {
+  kinesiapp.common.v1.PageRequest page = 1;
+}
+
+message ListCoachedAnalysesResponse {
+  repeated AnalysisSummary analyses = 1;
+  kinesiapp.common.v1.PageResponse page = 2;
+}
+
+message DeleteAnalysisRequest {
+  int64 analysis_id = 1;
+}
+
+message DeleteAnalysisResponse {}
+
+message GetVideoPlaybackUrlRequest {
+  int64 analysis_id = 1;
+}
+
+message GetVideoPlaybackUrlResponse {
+  kinesiapp.common.v1.SignedUrl video = 1;
+}
