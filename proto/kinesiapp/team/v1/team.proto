@@ -77,10 +77,10 @@ service TeamService {
 }
 
 message Team {
-  int64 id = 1;
+  int64 id = 1 [jstype = JS_STRING];
   string name = 2;
-  int64 owner_id = 3;
-  repeated int64 athlete_ids = 4;
+  int64 owner_id = 3 [jstype = JS_STRING];
+  repeated int64 athlete_ids = 4 [jstype = JS_STRING];
   google.protobuf.Timestamp created_at = 5;
 }
 
@@ -100,7 +100,7 @@ message CreateTeamResponse {
 }
 
 message GetTeamRequest {
-  int64 team_id = 1;
+  int64 team_id = 1 [jstype = JS_STRING];
 }
 
 message GetTeamResponse {
@@ -108,7 +108,7 @@ message GetTeamResponse {
 }
 
 message RenameTeamRequest {
-  int64 team_id = 1;
+  int64 team_id = 1 [jstype = JS_STRING];
   string name = 2;
 }
 
@@ -117,14 +117,14 @@ message RenameTeamResponse {
 }
 
 message DeleteTeamRequest {
-  int64 team_id = 1;
+  int64 team_id = 1 [jstype = JS_STRING];
 }
 
 message DeleteTeamResponse {}
 
 message AddTeamMemberRequest {
-  int64 team_id = 1;
-  int64 athlete_id = 2;
+  int64 team_id = 1 [jstype = JS_STRING];
+  int64 athlete_id = 2 [jstype = JS_STRING];
 }
 
 message AddTeamMemberResponse {
@@ -132,8 +132,8 @@ message AddTeamMemberResponse {
 }
 
 message RemoveTeamMemberRequest {
-  int64 team_id = 1;
-  int64 athlete_id = 2;
+  int64 team_id = 1 [jstype = JS_STRING];
+  int64 athlete_id = 2 [jstype = JS_STRING];
 }
 
 message RemoveTeamMemberResponse {

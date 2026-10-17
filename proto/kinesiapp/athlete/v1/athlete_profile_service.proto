@@ -98,7 +98,7 @@ message ListAthletesResponse {
 }
 
 message CreateAthleteProfileRequest {
-  int64 user_id = 1;
+  int64 user_id = 1 [jstype = JS_STRING];
   Biometrics biometrics = 2;
 }
 
@@ -107,7 +107,7 @@ message CreateAthleteProfileResponse {
 }
 
 message GetAthleteProfileRequest {
-  int64 athlete_id = 1;
+  int64 athlete_id = 1 [jstype = JS_STRING];
 }
 
 message GetAthleteProfileResponse {
@@ -115,9 +115,9 @@ message GetAthleteProfileResponse {
 }
 
 message AssignCoachRequest {
-  int64 athlete_id = 1;
+  int64 athlete_id = 1 [jstype = JS_STRING];
   // Debe ser una cuenta con rol COACH (INVALID_ROLE_ASSIGNMENT).
-  int64 coach_id = 2;
+  int64 coach_id = 2 [jstype = JS_STRING];
 }
 
 message AssignCoachResponse {

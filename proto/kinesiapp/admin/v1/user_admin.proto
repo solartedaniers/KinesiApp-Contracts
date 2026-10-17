@@ -45,7 +45,7 @@ service UserAdminService {
 }
 
 message User {
-  int64 id = 1;
+  int64 id = 1 [jstype = JS_STRING];
   string email = 2;
   string full_name = 3;
   kinesiapp.common.v1.UserRole role = 4;
@@ -67,7 +67,7 @@ message CreateUserResponse {
 }
 
 message GetUserRequest {
-  int64 user_id = 1;
+  int64 user_id = 1 [jstype = JS_STRING];
 }
 
 message GetUserResponse {
@@ -84,7 +84,7 @@ message ListUsersResponse {
 }
 
 message UpdateUserRoleRequest {
-  int64 user_id = 1;
+  int64 user_id = 1 [jstype = JS_STRING];
   kinesiapp.common.v1.UserRole role = 2;
 }
 
@@ -93,7 +93,7 @@ message UpdateUserRoleResponse {
 }
 
 message UpdateUserStatusRequest {
-  int64 user_id = 1;
+  int64 user_id = 1 [jstype = JS_STRING];
   bool is_active = 2;
 }
 

@@ -14,10 +14,10 @@ enum Gender {
 
 // Ficha de un deportista: con cuenta propia (user_id) o gestionado por un coach sin cuenta.
 message AthleteProfile {
-  int64 id = 1;
+  int64 id = 1 [jstype = JS_STRING];
   // Ausente en los deportistas gestionados.
-  optional int64 user_id = 2;
-  optional int64 coach_id = 3;
+  optional int64 user_id = 2 [jstype = JS_STRING];
+  optional int64 coach_id = 3 [jstype = JS_STRING];
   optional string coach_name = 4;
   // El nombre de la cuenta o, si es gestionado, el que le puso el coach.
   string display_name = 5;

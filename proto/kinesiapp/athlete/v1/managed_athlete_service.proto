@@ -70,7 +70,7 @@ message CreateManagedAthleteResponse {
 }
 
 message UpdateManagedAthleteRequest {
-  int64 athlete_id = 1;
+  int64 athlete_id = 1 [jstype = JS_STRING];
   optional string full_name = 2;
   BiometricsUpdate biometrics = 3;
 }
@@ -80,13 +80,13 @@ message UpdateManagedAthleteResponse {
 }
 
 message DeleteManagedAthleteRequest {
-  int64 athlete_id = 1;
+  int64 athlete_id = 1 [jstype = JS_STRING];
 }
 
 message DeleteManagedAthleteResponse {}
 
 message CreateManagedAthleteAvatarUploadRequest {
-  int64 athlete_id = 1;
+  int64 athlete_id = 1 [jstype = JS_STRING];
   kinesiapp.common.v1.ImageContentType content_type = 2;
   int64 content_length = 3;
 }
@@ -97,7 +97,7 @@ message CreateManagedAthleteAvatarUploadResponse {
 }
 
 message ConfirmManagedAthleteAvatarUploadRequest {
-  int64 athlete_id = 1;
+  int64 athlete_id = 1 [jstype = JS_STRING];
   string upload_id = 2;
 }
 
@@ -106,7 +106,7 @@ message ConfirmManagedAthleteAvatarUploadResponse {
 }
 
 message DeleteManagedAthleteAvatarRequest {
-  int64 athlete_id = 1;
+  int64 athlete_id = 1 [jstype = JS_STRING];
 }
 
 message DeleteManagedAthleteAvatarResponse {

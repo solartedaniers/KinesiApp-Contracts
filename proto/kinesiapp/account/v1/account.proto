@@ -27,7 +27,7 @@ service AccountService {
 }
 
 message Account {
-  int64 id = 1;
+  int64 id = 1 [jstype = JS_STRING];
   string email = 2;
   string full_name = 3;
   kinesiapp.common.v1.UserRole role = 4;
