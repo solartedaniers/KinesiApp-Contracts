@@ -1,0 +1,102 @@
+syntax = "proto3";
+
+package kinesiapp.admin.v1;
+
+import "google/protobuf/timestamp.proto";
+import "kinesiapp/common/v1/identity.proto";
+import "kinesiapp/common/v1/pagination.proto";
+import "kinesiapp/common/v1/storage.proto";
+
+// Administración de cuentas: solo para ADMIN.
+service UserAdminService {
+  // Crea una cuenta sin verificar; su dueño la activa con el código que pide al iniciar sesión.
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [USER_ROLE_ADMIN]
+    };
+  }
+
+  rpc GetUser(GetUserRequest) returns (GetUserResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [USER_ROLE_ADMIN]
+    };
+  }
+
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [USER_ROLE_ADMIN]
+    };
+  }
+
+  // Un admin no puede cambiar su propio rol (CANNOT_MODIFY_OWN_ACCOUNT), y un coach con deportistas
+  // asignados no puede dejar de serlo (COACH_HAS_ATHLETES).
+  rpc UpdateUserRole(UpdateUserRoleRequest) returns (UpdateUserRoleResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [USER_ROLE_ADMIN]
+    };
+  }
+
+  // Desactivar una cuenta no borra datos: solo le impide iniciar sesión y renovar tokens.
+  rpc UpdateUserStatus(UpdateUserStatusRequest) returns (UpdateUserStatusResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [USER_ROLE_ADMIN]
+    };
+  }
+}
+
+message User {
+  int64 id = 1;
+  string email = 2;
+  string full_name = 3;
+  kinesiapp.common.v1.UserRole role = 4;
+  bool is_active = 5;
+  bool is_verified = 6;
+  google.protobuf.Timestamp created_at = 7;
+  optional kinesiapp.common.v1.SignedUrl avatar = 8;
+}
+
+message CreateUserRequest {
+  string email = 1;
+  string password = 2;
+  string full_name = 3;
+  kinesiapp.common.v1.UserRole role = 4;
+}
+
+message CreateUserResponse {
+  User user = 1;
+}
+
+message GetUserRequest {
+  int64 user_id = 1;
+}
+
+message GetUserResponse {
+  User user = 1;
+}
+
+message ListUsersRequest {
+  kinesiapp.common.v1.PageRequest page = 1;
+}
+
+message ListUsersResponse {
+  repeated User users = 1;
+  kinesiapp.common.v1.PageResponse page = 2;
+}
+
+message UpdateUserRoleRequest {
+  int64 user_id = 1;
+  kinesiapp.common.v1.UserRole role = 2;
+}
+
+message UpdateUserRoleResponse {
+  User user = 1;
+}
+
+message UpdateUserStatusRequest {
+  int64 user_id = 1;
+  bool is_active = 2;
+}
+
+message UpdateUserStatusResponse {
+  User user = 1;
+}
