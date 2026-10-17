@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package kinesiapp.common.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// URL firmada de Neon Storage para que el navegador suba un archivo directo al bucket privado.
+message UploadTarget {
+  // El navegador hace un PUT a esta URL con el archivo como cuerpo.
+  string url = 1;
+  // Headers que el PUT debe llevar tal cual, porque forman parte de la firma (Content-Type, etc.).
+  map<string, string> headers = 2;
+  google.protobuf.Timestamp expires_at = 3;
+}
+
+// URL firmada de solo lectura y vida corta para mostrar un archivo privado (video, avatar).
+message SignedUrl {
+  string url = 1;
+  // Antes de esta hora pido otra URL; el bucket rechaza la firma vencida.
+  google.protobuf.Timestamp expires_at = 2;
+}
+
+enum ImageContentType {
+  IMAGE_CONTENT_TYPE_UNSPECIFIED = 0;
+  IMAGE_CONTENT_TYPE_JPEG = 1;
+  IMAGE_CONTENT_TYPE_PNG = 2;
+  IMAGE_CONTENT_TYPE_WEBP = 3;
+}
