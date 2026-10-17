@@ -1,0 +1,125 @@
+syntax = "proto3";
+
+package kinesiapp.athlete.v1;
+
+import "kinesiapp/athlete/v1/athlete.proto";
+import "kinesiapp/common/v1/identity.proto";
+import "kinesiapp/common/v1/pagination.proto";
+
+// Fichas de deportistas con cuenta propia: la del propio deportista, las de los que entrena un coach
+// y la gestión completa del admin.
+service AthleteProfileService {
+  // La ficha obligatoria del onboarding. Solo una por cuenta (PROFILE_ALREADY_EXISTS).
+  rpc CreateMyAthleteProfile(CreateMyAthleteProfileRequest) returns (CreateMyAthleteProfileResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [USER_ROLE_ATHLETE]
+    };
+  }
+
+  // NOT_FOUND mientras el deportista no complete el onboarding; el frontend lo trata como un resultado válido.
+  rpc GetMyAthleteProfile(GetMyAthleteProfileRequest) returns (GetMyAthleteProfileResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [USER_ROLE_ATHLETE]
+    };
+  }
+
+  rpc UpdateMyAthleteProfile(UpdateMyAthleteProfileRequest) returns (UpdateMyAthleteProfileResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [USER_ROLE_ATHLETE]
+    };
+  }
+
+  // Los deportistas con cuenta que un admin le asignó al coach que llama.
+  rpc ListCoachedAthletes(ListCoachedAthletesRequest) returns (ListCoachedAthletesResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [USER_ROLE_COACH]
+    };
+  }
+
+  // Todos los deportistas, con cuenta o gestionados.
+  rpc ListAthletes(ListAthletesRequest) returns (ListAthletesResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [USER_ROLE_ADMIN]
+    };
+  }
+
+  // El admin crea la ficha de una cuenta de deportista que todavía no la tiene.
+  rpc CreateAthleteProfile(CreateAthleteProfileRequest) returns (CreateAthleteProfileResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [USER_ROLE_ADMIN]
+    };
+  }
+
+  // Lo ven el propio deportista, su coach y el admin; a cualquier otro le respondo PERMISSION_DENIED.
+  rpc GetAthleteProfile(GetAthleteProfileRequest) returns (GetAthleteProfileResponse);
+
+  rpc AssignCoach(AssignCoachRequest) returns (AssignCoachResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [USER_ROLE_ADMIN]
+    };
+  }
+}
+
+message CreateMyAthleteProfileRequest {
+  Biometrics biometrics = 1;
+}
+
+message CreateMyAthleteProfileResponse {
+  AthleteProfile athlete = 1;
+}
+
+message GetMyAthleteProfileRequest {}
+
+message GetMyAthleteProfileResponse {
+  AthleteProfile athlete = 1;
+}
+
+message UpdateMyAthleteProfileRequest {
+  BiometricsUpdate biometrics = 1;
+}
+
+message UpdateMyAthleteProfileResponse {
+  AthleteProfile athlete = 1;
+}
+
+message ListCoachedAthletesRequest {}
+
+message ListCoachedAthletesResponse {
+  repeated AthleteProfile athletes = 1;
+}
+
+message ListAthletesRequest {
+  kinesiapp.common.v1.PageRequest page = 1;
+}
+
+message ListAthletesResponse {
+  repeated AthleteProfile athletes = 1;
+  kinesiapp.common.v1.PageResponse page = 2;
+}
+
+message CreateAthleteProfileRequest {
+  int64 user_id = 1;
+  Biometrics biometrics = 2;
+}
+
+message CreateAthleteProfileResponse {
+  AthleteProfile athlete = 1;
+}
+
+message GetAthleteProfileRequest {
+  int64 athlete_id = 1;
+}
+
+message GetAthleteProfileResponse {
+  AthleteProfile athlete = 1;
+}
+
+message AssignCoachRequest {
+  int64 athlete_id = 1;
+  // Debe ser una cuenta con rol COACH (INVALID_ROLE_ASSIGNMENT).
+  int64 coach_id = 2;
+}
+
+message AssignCoachResponse {
+  AthleteProfile athlete = 1;
+}
