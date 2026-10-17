@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package kinesiapp.common.v1;
+
+import "google/protobuf/descriptor.proto";
+
+enum UserRole {
+  USER_ROLE_UNSPECIFIED = 0;
+  USER_ROLE_ATHLETE = 1;
+  USER_ROLE_COACH = 2;
+  USER_ROLE_ADMIN = 3;
+}
+
+// Quién puede llamar a un RPC. Lo declaro en el contrato para que el interceptor de autenticación
+// del servidor lo lea del descriptor, en vez de repetir la regla en cada handler.
+// Un RPC sin esta opción exige sesión iniciada con cualquier rol.
+message AccessPolicy {
+  // Sin token: registro, login, recuperación de contraseña y configuración pública.
+  bool public = 1;
+  // Si no está vacía, solo estos roles pasan el interceptor. El control fino (dueño, coach del
+  // deportista) lo sigue haciendo el servicio.
+  repeated UserRole roles = 2;
+}
+
+extend google.protobuf.MethodOptions {
+  // 50000-99999 es el rango reservado para extensiones propias de una organización.
+  AccessPolicy access = 50001;
+}
