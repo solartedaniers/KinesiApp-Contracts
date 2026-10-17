@@ -1,0 +1,141 @@
+syntax = "proto3";
+
+package kinesiapp.team.v1;
+
+import "google/protobuf/timestamp.proto";
+import "kinesiapp/common/v1/identity.proto";
+
+// Equipos para agrupar deportistas. El coach gestiona los suyos y el admin los de cualquiera.
+service TeamService {
+  rpc ListTeams(ListTeamsRequest) returns (ListTeamsResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [
+        USER_ROLE_COACH,
+        USER_ROLE_ADMIN
+      ]
+    };
+  }
+
+  // El nombre es único por dueño, sin contar espacios en los extremos (TEAM_NAME_TAKEN).
+  rpc CreateTeam(CreateTeamRequest) returns (CreateTeamResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [
+        USER_ROLE_COACH,
+        USER_ROLE_ADMIN
+      ]
+    };
+  }
+
+  rpc GetTeam(GetTeamRequest) returns (GetTeamResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [
+        USER_ROLE_COACH,
+        USER_ROLE_ADMIN
+      ]
+    };
+  }
+
+  rpc RenameTeam(RenameTeamRequest) returns (RenameTeamResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [
+        USER_ROLE_COACH,
+        USER_ROLE_ADMIN
+      ]
+    };
+  }
+
+  // Borra el equipo, no a sus deportistas.
+  rpc DeleteTeam(DeleteTeamRequest) returns (DeleteTeamResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [
+        USER_ROLE_COACH,
+        USER_ROLE_ADMIN
+      ]
+    };
+  }
+
+  // Idempotente. El deportista debe tener como coach al dueño del equipo, salvo en los equipos de un
+  // admin (INVALID_TEAM_MEMBER).
+  rpc AddTeamMember(AddTeamMemberRequest) returns (AddTeamMemberResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [
+        USER_ROLE_COACH,
+        USER_ROLE_ADMIN
+      ]
+    };
+  }
+
+  // Idempotente.
+  rpc RemoveTeamMember(RemoveTeamMemberRequest) returns (RemoveTeamMemberResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [
+        USER_ROLE_COACH,
+        USER_ROLE_ADMIN
+      ]
+    };
+  }
+}
+
+message Team {
+  int64 id = 1;
+  string name = 2;
+  int64 owner_id = 3;
+  repeated int64 athlete_ids = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
+
+message ListTeamsRequest {}
+
+message ListTeamsResponse {
+  repeated Team teams = 1;
+}
+
+message CreateTeamRequest {
+  // De 1 a 100 caracteres.
+  string name = 1;
+}
+
+message CreateTeamResponse {
+  Team team = 1;
+}
+
+message GetTeamRequest {
+  int64 team_id = 1;
+}
+
+message GetTeamResponse {
+  Team team = 1;
+}
+
+message RenameTeamRequest {
+  int64 team_id = 1;
+  string name = 2;
+}
+
+message RenameTeamResponse {
+  Team team = 1;
+}
+
+message DeleteTeamRequest {
+  int64 team_id = 1;
+}
+
+message DeleteTeamResponse {}
+
+message AddTeamMemberRequest {
+  int64 team_id = 1;
+  int64 athlete_id = 2;
+}
+
+message AddTeamMemberResponse {
+  Team team = 1;
+}
+
+message RemoveTeamMemberRequest {
+  int64 team_id = 1;
+  int64 athlete_id = 2;
+}
+
+message RemoveTeamMemberResponse {
+  Team team = 1;
+}
