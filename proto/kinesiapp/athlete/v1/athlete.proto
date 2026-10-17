@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package kinesiapp.athlete.v1;
+
+import "kinesiapp/common/v1/date.proto";
+import "kinesiapp/common/v1/storage.proto";
+
+enum Gender {
+  GENDER_UNSPECIFIED = 0;
+  GENDER_MALE = 1;
+  GENDER_FEMALE = 2;
+  GENDER_OTHER = 3;
+}
+
+// Ficha de un deportista: con cuenta propia (user_id) o gestionado por un coach sin cuenta.
+message AthleteProfile {
+  int64 id = 1;
+  // Ausente en los deportistas gestionados.
+  optional int64 user_id = 2;
+  optional int64 coach_id = 3;
+  optional string coach_name = 4;
+  // El nombre de la cuenta o, si es gestionado, el que le puso el coach.
+  string display_name = 5;
+  optional kinesiapp.common.v1.SignedUrl avatar = 6;
+  bool is_managed = 7;
+  Biometrics biometrics = 8;
+}
+
+// La edad no se guarda: siempre se deriva de birth_date.
+message Biometrics {
+  Gender gender = 1;
+  // Mayor que 0 y hasta 300.
+  double height_cm = 2;
+  // Mayor que 0 y hasta 400.
+  double weight_kg = 3;
+  // En el pasado y con la edad dentro del rango de SystemService.GetClientPolicy.
+  kinesiapp.common.v1.CalendarDate birth_date = 4;
+}
+
+// Edición parcial: solo aplico los campos presentes.
+message BiometricsUpdate {
+  optional Gender gender = 1;
+  optional double height_cm = 2;
+  optional double weight_kg = 3;
+  optional kinesiapp.common.v1.CalendarDate birth_date = 4;
+}
