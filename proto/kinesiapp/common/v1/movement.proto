@@ -1,0 +1,131 @@
+syntax = "proto3";
+
+package kinesiapp.common.v1;
+
+// Tipos del análisis de movimiento que comparten el dominio de análisis (lo que ve el usuario) y el de
+// IA (lo que calcula el modelo). Los dejo aquí para que el resultado viaje igual de la IA al frontend
+// sin que un dominio importe al otro.
+
+enum MovementType {
+  MOVEMENT_TYPE_UNSPECIFIED = 0;
+  MOVEMENT_TYPE_JUMP = 1;
+  MOVEMENT_TYPE_SQUAT = 2;
+}
+
+enum AnalysisStatus {
+  ANALYSIS_STATUS_UNSPECIFIED = 0;
+  // Video subido y en cola o en proceso.
+  ANALYSIS_STATUS_PENDING = 1;
+  ANALYSIS_STATUS_PROCESSED = 2;
+  ANALYSIS_STATUS_FAILED = 3;
+}
+
+// Etapa del procesamiento, para mostrar el progreso mientras corre el análisis.
+enum AnalysisStage {
+  ANALYSIS_STAGE_UNSPECIFIED = 0;
+  ANALYSIS_STAGE_QUEUED = 1;
+  ANALYSIS_STAGE_DOWNLOADING_VIDEO = 2;
+  // La etapa larga: YOLO y MediaPipe frame por frame. Es la única con frames_processed/frames_total.
+  ANALYSIS_STAGE_EXTRACTING_POSE = 3;
+  ANALYSIS_STAGE_DETECTING_REPETITIONS = 4;
+  ANALYSIS_STAGE_SCORING_RISK = 5;
+}
+
+message AnalysisProgress {
+  AnalysisStage stage = 1;
+  int32 frames_processed = 2;
+  // 0 mientras no se conoce.
+  int32 frames_total = 3;
+}
+
+// Nivel según los cortes del modelo de riesgo. Lo calcula el servidor para que el frontend no
+// replique los umbrales.
+enum RiskLevel {
+  RISK_LEVEL_UNSPECIFIED = 0;
+  RISK_LEVEL_LOW = 1;
+  RISK_LEVEL_MODERATE = 2;
+  RISK_LEVEL_HIGH = 3;
+}
+
+enum JointAngle {
+  JOINT_ANGLE_UNSPECIFIED = 0;
+  JOINT_ANGLE_KNEE_FLEXION = 1;
+  JOINT_ANGLE_TRUNK_INCLINATION = 2;
+}
+
+// Un ángulo medido en un frame.
+message JointAngleSample {
+  JointAngle joint = 1;
+  double angle_degrees = 2;
+  // Milisegundos desde el inicio del video.
+  int32 frame_timestamp_ms = 3;
+}
+
+// Cómo se encontró una repetición dentro del video.
+enum DetectionMethod {
+  DETECTION_METHOD_UNSPECIFIED = 0;
+  DETECTION_METHOD_LANDING = 1;
+  DETECTION_METHOD_KNEE_BOTTOM = 2;
+  DETECTION_METHOD_TRUNK_HINGE = 3;
+}
+
+enum RiskDirection {
+  RISK_DIRECTION_UNSPECIFIED = 0;
+  RISK_DIRECTION_HIGHER_IS_RISKIER = 1;
+  RISK_DIRECTION_LOWER_IS_RISKIER = 2;
+}
+
+message AngleSummary {
+  double median_degrees = 1;
+  double min_degrees = 2;
+  double max_degrees = 3;
+}
+
+// Una señal de riesgo (por ejemplo "knee_rigid") con la rampa que la puntúa.
+message RiskSignal {
+  // Código configurable de la señal; no lo hago enum porque los patrones salen de la configuración del modelo.
+  string code = 1;
+  JointAngle joint = 2;
+  RiskDirection direction = 3;
+  double onset_degrees = 4;
+  double saturation_degrees = 5;
+  // Ausente si el ángulo no se pudo medir en ninguna repetición.
+  optional AngleSummary measured = 6;
+  optional double score_median = 7;
+}
+
+message RiskPattern {
+  // Código configurable del patrón, por ejemplo "rigid_landing".
+  string code = 1;
+  optional double score = 2;
+  int32 repetitions_triggered = 3;
+  repeated RiskSignal signals = 4;
+}
+
+message RepetitionScore {
+  string code = 1;
+  // Ausente si no se pudo calcular (ángulo no medido).
+  optional double score = 2;
+  optional double measured_degrees = 3;
+}
+
+message Repetition {
+  int32 start_ms = 1;
+  int32 end_ms = 2;
+  DetectionMethod detected_by = 3;
+  // Puntaje de cada patrón en esta repetición.
+  repeated RepetitionScore pattern_scores = 4;
+  // Puntaje y ángulo de cada señal en esta repetición.
+  repeated RepetitionScore signal_scores = 5;
+}
+
+// Resultado completo del modelo de riesgo. Reemplaza al JSON libre risk_details.
+message RiskAssessment {
+  // De 0 a 1.
+  double risk_score = 1;
+  RiskLevel risk_level = 2;
+  // Ausente cuando ningún patrón se disparó.
+  optional string dominant_pattern = 3;
+  repeated RiskPattern patterns = 4;
+  repeated Repetition repetitions = 5;
+}
