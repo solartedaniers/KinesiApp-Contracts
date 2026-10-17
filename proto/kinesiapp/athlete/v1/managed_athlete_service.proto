@@ -1,0 +1,114 @@
+syntax = "proto3";
+
+package kinesiapp.athlete.v1;
+
+import "kinesiapp/athlete/v1/athlete.proto";
+import "kinesiapp/common/v1/identity.proto";
+import "kinesiapp/common/v1/storage.proto";
+
+// Deportistas sin cuenta propia que crea y gestiona un coach. Cada coach solo ve y toca los suyos.
+service ManagedAthleteService {
+  rpc ListManagedAthletes(ListManagedAthletesRequest) returns (ListManagedAthletesResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [USER_ROLE_COACH]
+    };
+  }
+
+  rpc CreateManagedAthlete(CreateManagedAthleteRequest) returns (CreateManagedAthleteResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [USER_ROLE_COACH]
+    };
+  }
+
+  rpc UpdateManagedAthlete(UpdateManagedAthleteRequest) returns (UpdateManagedAthleteResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [USER_ROLE_COACH]
+    };
+  }
+
+  // Borra también sus análisis, sus videos y su avatar del bucket.
+  rpc DeleteManagedAthlete(DeleteManagedAthleteRequest) returns (DeleteManagedAthleteResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [USER_ROLE_COACH]
+    };
+  }
+
+  // Mismo flujo de dos pasos que AccountService.CreateAvatarUpload / ConfirmAvatarUpload.
+  rpc CreateManagedAthleteAvatarUpload(CreateManagedAthleteAvatarUploadRequest) returns (CreateManagedAthleteAvatarUploadResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [USER_ROLE_COACH]
+    };
+  }
+
+  rpc ConfirmManagedAthleteAvatarUpload(ConfirmManagedAthleteAvatarUploadRequest) returns (ConfirmManagedAthleteAvatarUploadResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [USER_ROLE_COACH]
+    };
+  }
+
+  rpc DeleteManagedAthleteAvatar(DeleteManagedAthleteAvatarRequest) returns (DeleteManagedAthleteAvatarResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [USER_ROLE_COACH]
+    };
+  }
+}
+
+message ListManagedAthletesRequest {}
+
+message ListManagedAthletesResponse {
+  repeated AthleteProfile athletes = 1;
+}
+
+message CreateManagedAthleteRequest {
+  // Solo letras y espacios, la misma regla del nombre de una cuenta.
+  string full_name = 1;
+  Biometrics biometrics = 2;
+}
+
+message CreateManagedAthleteResponse {
+  AthleteProfile athlete = 1;
+}
+
+message UpdateManagedAthleteRequest {
+  int64 athlete_id = 1;
+  optional string full_name = 2;
+  BiometricsUpdate biometrics = 3;
+}
+
+message UpdateManagedAthleteResponse {
+  AthleteProfile athlete = 1;
+}
+
+message DeleteManagedAthleteRequest {
+  int64 athlete_id = 1;
+}
+
+message DeleteManagedAthleteResponse {}
+
+message CreateManagedAthleteAvatarUploadRequest {
+  int64 athlete_id = 1;
+  kinesiapp.common.v1.ImageContentType content_type = 2;
+  int64 content_length = 3;
+}
+
+message CreateManagedAthleteAvatarUploadResponse {
+  string upload_id = 1;
+  kinesiapp.common.v1.UploadTarget target = 2;
+}
+
+message ConfirmManagedAthleteAvatarUploadRequest {
+  int64 athlete_id = 1;
+  string upload_id = 2;
+}
+
+message ConfirmManagedAthleteAvatarUploadResponse {
+  AthleteProfile athlete = 1;
+}
+
+message DeleteManagedAthleteAvatarRequest {
+  int64 athlete_id = 1;
+}
+
+message DeleteManagedAthleteAvatarResponse {
+  AthleteProfile athlete = 1;
+}
