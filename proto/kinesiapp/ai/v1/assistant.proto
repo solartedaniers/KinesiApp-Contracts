@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package kinesiapp.ai.v1;
+
+import "kinesiapp/common/v1/chat.proto";
+import "kinesiapp/common/v1/identity.proto";
+import "kinesiapp/common/v1/movement.proto";
+
+// Asistente que explica un análisis. El prompt (instrucciones, catálogo de patrones, recorte del historial)
+// lo armo aquí; el backend solo manda datos estructurados y guarda lo que vuelve. Nunca recibe el video,
+// nombres, correos ni la fecha de nacimiento.
+// Si el proveedor del LLM falla, el stream termina con UNAVAILABLE y reason ASSISTANT_UNAVAILABLE.
+service AssistantService {
+  // La primera explicación del resultado, en streaming.
+  rpc ExplainAnalysis(ExplainAnalysisRequest) returns (stream ExplainAnalysisResponse);
+
+  // Responde una pregunta sobre el análisis teniendo en cuenta la conversación previa, en streaming.
+  rpc AnswerQuestion(AnswerQuestionRequest) returns (stream AnswerQuestionResponse);
+}
+
+// Los datos del análisis que el asistente necesita.
+message AnalysisFacts {
+  kinesiapp.common.v1.MovementType movement_type = 1;
+  double risk_score = 2;
+  optional string dominant_risk_pattern = 3;
+  // Ausente en análisis antiguos: el asistente responde en modo reducido, solo con el puntaje y el patrón.
+  optional kinesiapp.common.v1.RiskAssessment risk_assessment = 4;
+}
+
+message ConversationTurn {
+  kinesiapp.common.v1.ChatRole role = 1;
+  string content = 2;
+}
+
+// Lo último de cada respuesta.
+message AssistantReply {
+  string content = 1;
+  // Versión de las instrucciones con que se generó; el backend la guarda junto al mensaje.
+  string prompt_version = 2;
+}
+
+message ExplainAnalysisRequest {
+  AnalysisFacts facts = 1;
+  // ATHLETE o COACH: cambia el tono y el foco de la explicación.
+  kinesiapp.common.v1.UserRole audience = 2;
+}
+
+message ExplainAnalysisResponse {
+  oneof event {
+    string text_delta = 1;
+    // Siempre el último mensaje del stream.
+    AssistantReply reply = 2;
+  }
+}
+
+message AnswerQuestionRequest {
+  AnalysisFacts facts = 1;
+  kinesiapp.common.v1.UserRole audience = 2;
+  // Toda la conversación guardada, en orden; el recorte a los últimos mensajes lo hago aquí.
+  repeated ConversationTurn history = 3;
+  string question = 4;
+}
+
+message AnswerQuestionResponse {
+  oneof event {
+    string text_delta = 1;
+    AssistantReply reply = 2;
+  }
+}
