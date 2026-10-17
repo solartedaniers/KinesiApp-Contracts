@@ -1,0 +1,22 @@
+name: buf
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  buf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Lint, formato y, en los pull requests, cambios incompatibles contra la rama base.
+      # No publico en el registro de Buf: los repos consumen el contrato como submódulo
+      - uses: bufbuild/buf-action@v1
+        with:
+          push: false
