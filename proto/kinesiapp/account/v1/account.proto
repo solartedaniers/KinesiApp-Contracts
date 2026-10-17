@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package kinesiapp.account.v1;
+
+import "google/protobuf/timestamp.proto";
+import "kinesiapp/common/v1/identity.proto";
+import "kinesiapp/common/v1/storage.proto";
+
+// La cuenta de quien llama, con cualquier rol. La administración de otras cuentas está en
+// kinesiapp.admin.v1.UserAdminService.
+service AccountService {
+  rpc GetMyAccount(GetMyAccountRequest) returns (GetMyAccountResponse);
+
+  rpc UpdateMyProfile(UpdateMyProfileRequest) returns (UpdateMyProfileResponse);
+
+  // Paso 1 del avatar: devuelve una URL firmada para que el navegador suba la imagen directo al bucket.
+  rpc CreateAvatarUpload(CreateAvatarUploadRequest) returns (CreateAvatarUploadResponse);
+
+  // Paso 2: compruebo que el objeto existe, que su contenido es la imagen declarada y que no pasa el
+  // tamaño máximo; si todo cuadra, reemplazo el avatar anterior y lo borro del bucket.
+  rpc ConfirmAvatarUpload(ConfirmAvatarUploadRequest) returns (ConfirmAvatarUploadResponse);
+
+  rpc DeleteMyAvatar(DeleteMyAvatarRequest) returns (DeleteMyAvatarResponse);
+
+  // Registra la aceptación del texto de consentimiento de video en su versión vigente.
+  rpc GrantVideoConsent(GrantVideoConsentRequest) returns (GrantVideoConsentResponse);
+}
+
+message Account {
+  int64 id = 1;
+  string email = 2;
+  string full_name = 3;
+  kinesiapp.common.v1.UserRole role = 4;
+  google.protobuf.Timestamp created_at = 5;
+  // URL de lectura de vida corta; ausente si no hay avatar.
+  optional kinesiapp.common.v1.SignedUrl avatar = 6;
+  // Ausentes si nunca aceptó el consentimiento de video. Si la versión no es la vigente, debe aceptarlo otra vez.
+  optional int32 video_consent_version = 7;
+  optional google.protobuf.Timestamp video_consent_given_at = 8;
+}
+
+message GetMyAccountRequest {}
+
+message GetMyAccountResponse {
+  Account account = 1;
+}
+
+message UpdateMyProfileRequest {
+  // Solo letras y espacios, la misma regla del registro.
+  string full_name = 1;
+}
+
+message UpdateMyProfileResponse {
+  Account account = 1;
+}
+
+message CreateAvatarUploadRequest {
+  kinesiapp.common.v1.ImageContentType content_type = 1;
+  // Tamaño exacto en bytes; queda dentro de la firma, así el bucket rechaza otro tamaño.
+  int64 content_length = 2;
+}
+
+message CreateAvatarUploadResponse {
+  // Identificador opaco de esta subida, para confirmarla.
+  string upload_id = 1;
+  kinesiapp.common.v1.UploadTarget target = 2;
+}
+
+message ConfirmAvatarUploadRequest {
+  string upload_id = 1;
+}
+
+message ConfirmAvatarUploadResponse {
+  Account account = 1;
+}
+
+message DeleteMyAvatarRequest {}
+
+message DeleteMyAvatarResponse {
+  Account account = 1;
+}
+
+message GrantVideoConsentRequest {
+  // Debe ser la versión vigente de SystemService.GetClientPolicy.
+  int32 version = 1;
+}
+
+message GrantVideoConsentResponse {
+  Account account = 1;
+}
