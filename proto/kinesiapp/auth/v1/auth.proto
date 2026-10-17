@@ -1,0 +1,152 @@
+syntax = "proto3";
+
+package kinesiapp.auth.v1;
+
+import "google/protobuf/timestamp.proto";
+import "kinesiapp/common/v1/identity.proto";
+
+// Registro, verificación por código, sesiones y recuperación de contraseña. Todo es público salvo
+// ChangePassword. El access token que entrega viaja después en la metadata "authorization: Bearer <token>".
+service AuthService {
+  // Crea la cuenta sin verificar y envía el código de verificación por correo. Si el correo ya tenía una
+  // cuenta sin verificar, la reemplazo en vez de fallar.
+  rpc Register(RegisterRequest) returns (RegisterResponse) {
+    option (kinesiapp.common.v1.access) = {public: true};
+  }
+
+  // Reenvía el código. Responde igual exista o no el correo, para no revelar qué cuentas hay.
+  rpc RequestVerificationCode(RequestVerificationCodeRequest) returns (RequestVerificationCodeResponse) {
+    option (kinesiapp.common.v1.access) = {public: true};
+  }
+
+  // Activa la cuenta y abre la primera sesión.
+  rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse) {
+    option (kinesiapp.common.v1.access) = {public: true};
+  }
+
+  rpc Login(LoginRequest) returns (LoginResponse) {
+    option (kinesiapp.common.v1.access) = {public: true};
+  }
+
+  // Rota el refresh token: el usado queda revocado, así uno robado y reutilizado deja de servir.
+  rpc RefreshSession(RefreshSessionRequest) returns (RefreshSessionResponse) {
+    option (kinesiapp.common.v1.access) = {public: true};
+  }
+
+  // Idempotente: revocar un token ya revocado o inexistente no es error.
+  rpc Logout(LogoutRequest) returns (LogoutResponse) {
+    option (kinesiapp.common.v1.access) = {public: true};
+  }
+
+  // Paso 1 de la recuperación. Responde igual exista o no el correo.
+  rpc RequestPasswordReset(RequestPasswordResetRequest) returns (RequestPasswordResetResponse) {
+    option (kinesiapp.common.v1.access) = {public: true};
+  }
+
+  // Paso 2: valida el código sin consumirlo, para pasar a la pantalla de la contraseña nueva.
+  rpc VerifyPasswordResetCode(VerifyPasswordResetCodeRequest) returns (VerifyPasswordResetCodeResponse) {
+    option (kinesiapp.common.v1.access) = {public: true};
+  }
+
+  // Paso 3: cambia la contraseña y revoca todas las sesiones abiertas.
+  rpc ConfirmPasswordReset(ConfirmPasswordResetRequest) returns (ConfirmPasswordResetResponse) {
+    option (kinesiapp.common.v1.access) = {public: true};
+  }
+
+  // Con sesión iniciada: exige la contraseña actual, revoca las demás sesiones y abre una nueva en este dispositivo.
+  rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
+}
+
+// Par de tokens de una sesión.
+message Session {
+  string access_token = 1;
+  string refresh_token = 2;
+  // Los devuelvo para que el cliente sepa cuándo renovar sin decodificar el JWT.
+  google.protobuf.Timestamp access_token_expires_at = 3;
+  google.protobuf.Timestamp refresh_token_expires_at = 4;
+}
+
+message RegisterRequest {
+  string email = 1;
+  // Debe cumplir la política de SystemService.GetClientPolicy.
+  string password = 2;
+  // Solo letras y espacios.
+  string full_name = 3;
+  // Solo ATHLETE o COACH; un ADMIN lo asigna otro admin.
+  kinesiapp.common.v1.UserRole role = 4;
+  // Versión del texto de consentimiento de video que la persona aceptó en el checkbox obligatorio.
+  // Si no es la vigente, respondo FAILED_PRECONDITION con CONSENT_REQUIRED.
+  int32 accepted_video_consent_version = 5;
+}
+
+message RegisterResponse {}
+
+message RequestVerificationCodeRequest {
+  string email = 1;
+}
+
+message RequestVerificationCodeResponse {}
+
+message VerifyEmailRequest {
+  string email = 1;
+  // Seis dígitos.
+  string code = 2;
+}
+
+message VerifyEmailResponse {
+  Session session = 1;
+}
+
+message LoginRequest {
+  string email = 1;
+  // Sin la política de contraseñas: una cuenta anterior a la regla vigente debe poder entrar.
+  string password = 2;
+}
+
+message LoginResponse {
+  Session session = 1;
+}
+
+message RefreshSessionRequest {
+  string refresh_token = 1;
+}
+
+message RefreshSessionResponse {
+  Session session = 1;
+}
+
+message LogoutRequest {
+  string refresh_token = 1;
+}
+
+message LogoutResponse {}
+
+message RequestPasswordResetRequest {
+  string email = 1;
+}
+
+message RequestPasswordResetResponse {}
+
+message VerifyPasswordResetCodeRequest {
+  string email = 1;
+  string code = 2;
+}
+
+message VerifyPasswordResetCodeResponse {}
+
+message ConfirmPasswordResetRequest {
+  string email = 1;
+  string code = 2;
+  string new_password = 3;
+}
+
+message ConfirmPasswordResetResponse {}
+
+message ChangePasswordRequest {
+  string current_password = 1;
+  string new_password = 2;
+}
+
+message ChangePasswordResponse {
+  Session session = 1;
+}
