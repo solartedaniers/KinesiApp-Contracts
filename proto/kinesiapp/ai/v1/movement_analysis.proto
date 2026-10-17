@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package kinesiapp.ai.v1;
+
+import "kinesiapp/common/v1/movement.proto";
+
+// Servicio interno de IA: solo lo llama el backend, por gRPC nativo en la red privada de Render. No pasa
+// por Envoy ni lleva token de usuario, así que la opción access no aplica a este paquete.
+// La salud del proceso se consulta con el estándar grpc.health.v1.Health.
+
+// Video → pose (YOLO + MediaPipe) → ángulos → repeticiones → riesgo.
+service MovementAnalysisService {
+  // Server streaming porque el análisis tarda decenas de segundos: el backend reenvía el progreso a
+  // AnalysisService.WatchAnalysis. Los errores de negocio cierran el stream con su status code:
+  // VIDEO_UNREADABLE (INVALID_ARGUMENT), VIDEO_TOO_LONG (INVALID_ARGUMENT) y NO_MOVEMENT_DETECTED (FAILED_PRECONDITION).
+  rpc AnalyzeVideo(AnalyzeVideoRequest) returns (stream AnalyzeVideoResponse);
+}
+
+message AnalyzeVideoRequest {
+  // URL firmada de lectura del video en el bucket. Le paso una URL y no los bytes para no cargar el video
+  // completo en un mensaje gRPC.
+  string video_url = 1;
+  kinesiapp.common.v1.MovementType movement_type = 2;
+}
+
+message AnalyzeVideoResponse {
+  oneof event {
+    kinesiapp.common.v1.AnalysisProgress progress = 1;
+    // Siempre el último mensaje del stream.
+    MovementAnalysisResult result = 2;
+  }
+}
+
+message MovementAnalysisResult {
+  kinesiapp.common.v1.RiskAssessment risk_assessment = 1;
+  repeated kinesiapp.common.v1.JointAngleSample angle_samples = 2;
+  // Duración real del archivo, medida aquí y no la que declaró el navegador.
+  int32 duration_ms = 3;
+  string pose_model_version = 4;
+  string risk_model_version = 5;
+}
