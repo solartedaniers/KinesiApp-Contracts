@@ -44,7 +44,7 @@ service TeamService {
     };
   }
 
-  // Borra el equipo, no a sus deportistas.
+  // Borro el equipo, no a sus deportistas.
   rpc DeleteTeam(DeleteTeamRequest) returns (DeleteTeamResponse) {
     option (kinesiapp.common.v1.access) = {
       roles: [

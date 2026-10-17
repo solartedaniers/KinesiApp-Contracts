@@ -3,7 +3,7 @@ syntax = "proto3";
 package kinesiapp.common.v1;
 
 // Fecha de calendario sin hora ni zona. La uso para la fecha de nacimiento, que con un Timestamp
-// cambiaría de día según la zona horaria. Tiene la misma forma que google.type.Date sin depender de googleapis.
+// cambiaría de día según la zona horaria. Le doy la forma de google.type.Date sin depender de googleapis.
 message CalendarDate {
   int32 year = 1;
   // De 1 a 12.

@@ -26,7 +26,7 @@ message AthleteProfile {
   Biometrics biometrics = 8;
 }
 
-// La edad no se guarda: siempre se deriva de birth_date.
+// No guardo la edad: siempre la derivo de birth_date.
 message Biometrics {
   Gender gender = 1;
   // Mayor que 0 y hasta 300.

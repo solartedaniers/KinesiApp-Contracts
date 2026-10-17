@@ -13,7 +13,7 @@ service AccountService {
 
   rpc UpdateMyProfile(UpdateMyProfileRequest) returns (UpdateMyProfileResponse);
 
-  // Paso 1 del avatar: devuelve una URL firmada para que el navegador suba la imagen directo al bucket.
+  // Paso 1 del avatar: devuelvo una URL firmada para que el navegador suba la imagen directo al bucket.
   rpc CreateAvatarUpload(CreateAvatarUploadRequest) returns (CreateAvatarUploadResponse);
 
   // Paso 2: compruebo que el objeto existe, que su contenido es la imagen declarada y que no pasa el
@@ -22,7 +22,7 @@ service AccountService {
 
   rpc DeleteMyAvatar(DeleteMyAvatarRequest) returns (DeleteMyAvatarResponse);
 
-  // Registra la aceptación del texto de consentimiento de video en su versión vigente.
+  // Registro la aceptación del texto de consentimiento de video en su versión vigente.
   rpc GrantVideoConsent(GrantVideoConsentRequest) returns (GrantVideoConsentResponse);
 }
 

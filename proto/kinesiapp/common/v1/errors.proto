@@ -47,19 +47,18 @@ enum ErrorReason {
   ERROR_REASON_STORAGE_UNAVAILABLE = 24; // UNAVAILABLE
   ERROR_REASON_INVALID_VIDEO = 25; // INVALID_ARGUMENT
   ERROR_REASON_VIDEO_TOO_LARGE = 26; // INVALID_ARGUMENT
-  // Nuevo: el límite de 40 s, que antes no se validaba en ningún lado.
   ERROR_REASON_VIDEO_TOO_LONG = 27; // INVALID_ARGUMENT
-  // Nuevo: se confirmó una subida pero el objeto no está en el bucket o no coincide con lo pedido.
+  // Me confirmaron una subida pero el objeto no está en el bucket o no coincide con lo pedido.
   ERROR_REASON_UPLOAD_NOT_FOUND = 28; // FAILED_PRECONDITION
-  // Nuevo: la imagen no coincide con su tipo declarado o pasa el tamaño máximo.
+  // La imagen no coincide con su tipo declarado o pasa el tamaño máximo.
   ERROR_REASON_INVALID_IMAGE = 29; // INVALID_ARGUMENT
 
   // Análisis.
   ERROR_REASON_ANALYSIS_NOT_PROCESSED = 30; // FAILED_PRECONDITION
-  // Nuevos: hoy un análisis fallido no dice por qué. Van en Analysis.failure_reason.
+  // Explican por qué falló un análisis; los guardo en AnalysisSummary.failure_reason.
   ERROR_REASON_VIDEO_UNREADABLE = 31; // INVALID_ARGUMENT
   ERROR_REASON_NO_MOVEMENT_DETECTED = 32; // FAILED_PRECONDITION
-  // Nuevo: el servicio de IA no respondió (dormido, caído o sin memoria).
+  // El servicio de IA no respondió (dormido, caído o sin memoria).
   ERROR_REASON_AI_UNAVAILABLE = 33; // UNAVAILABLE
 
   // Chat.

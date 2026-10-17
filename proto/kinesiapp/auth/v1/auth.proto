@@ -6,20 +6,20 @@ import "google/protobuf/timestamp.proto";
 import "kinesiapp/common/v1/identity.proto";
 
 // Registro, verificación por código, sesiones y recuperación de contraseña. Todo es público salvo
-// ChangePassword. El access token que entrega viaja después en la metadata "authorization: Bearer <token>".
+// ChangePassword. El access token que entrego viaja después en la metadata "authorization: Bearer <token>".
 service AuthService {
-  // Crea la cuenta sin verificar y envía el código de verificación por correo. Si el correo ya tenía una
+  // Creo la cuenta sin verificar y envío el código de verificación por correo. Si el correo ya tenía una
   // cuenta sin verificar, la reemplazo en vez de fallar.
   rpc Register(RegisterRequest) returns (RegisterResponse) {
     option (kinesiapp.common.v1.access) = {public: true};
   }
 
-  // Reenvía el código. Responde igual exista o no el correo, para no revelar qué cuentas hay.
+  // Reenvío el código. Respondo igual exista o no el correo, para no revelar qué cuentas hay.
   rpc RequestVerificationCode(RequestVerificationCodeRequest) returns (RequestVerificationCodeResponse) {
     option (kinesiapp.common.v1.access) = {public: true};
   }
 
-  // Activa la cuenta y abre la primera sesión.
+  // Activo la cuenta y abro la primera sesión.
   rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse) {
     option (kinesiapp.common.v1.access) = {public: true};
   }
@@ -28,7 +28,8 @@ service AuthService {
     option (kinesiapp.common.v1.access) = {public: true};
   }
 
-  // Rota el refresh token: el usado queda revocado, así uno robado y reutilizado deja de servir.
+  // Roto el refresh token: el usado queda revocado, así uno robado y reutilizado deja de servir.
+  // Con dos renovaciones simultáneas del mismo token, solo una abre sesión.
   rpc RefreshSession(RefreshSessionRequest) returns (RefreshSessionResponse) {
     option (kinesiapp.common.v1.access) = {public: true};
   }
@@ -38,26 +39,26 @@ service AuthService {
     option (kinesiapp.common.v1.access) = {public: true};
   }
 
-  // Paso 1 de la recuperación. Responde igual exista o no el correo.
+  // Paso 1 de la recuperación. Respondo igual exista o no el correo.
   rpc RequestPasswordReset(RequestPasswordResetRequest) returns (RequestPasswordResetResponse) {
     option (kinesiapp.common.v1.access) = {public: true};
   }
 
-  // Paso 2: valida el código sin consumirlo, para pasar a la pantalla de la contraseña nueva.
+  // Paso 2: valido el código sin consumirlo, para pasar a la pantalla de la contraseña nueva. La
+  // comprobación sí gasta un intento.
   rpc VerifyPasswordResetCode(VerifyPasswordResetCodeRequest) returns (VerifyPasswordResetCodeResponse) {
     option (kinesiapp.common.v1.access) = {public: true};
   }
 
-  // Paso 3: cambia la contraseña y revoca todas las sesiones abiertas.
+  // Paso 3: cambio la contraseña y revoco todas las sesiones abiertas.
   rpc ConfirmPasswordReset(ConfirmPasswordResetRequest) returns (ConfirmPasswordResetResponse) {
     option (kinesiapp.common.v1.access) = {public: true};
   }
 
-  // Con sesión iniciada: exige la contraseña actual, revoca las demás sesiones y abre una nueva en este dispositivo.
+  // Con sesión iniciada: exijo la contraseña actual, revoco las demás sesiones y abro una nueva en este dispositivo.
   rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
 }
 
-// Par de tokens de una sesión.
 message Session {
   string access_token = 1;
   string refresh_token = 2;

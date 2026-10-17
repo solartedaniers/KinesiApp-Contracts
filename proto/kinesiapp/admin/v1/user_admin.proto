@@ -9,7 +9,7 @@ import "kinesiapp/common/v1/storage.proto";
 
 // Administración de cuentas: solo para ADMIN.
 service UserAdminService {
-  // Crea una cuenta sin verificar; su dueño la activa con el código que pide al iniciar sesión.
+  // Creo la cuenta inactiva y sin verificar, y le envío el código por correo para que su dueño la active.
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
     option (kinesiapp.common.v1.access) = {
       roles: [USER_ROLE_ADMIN]
@@ -36,7 +36,7 @@ service UserAdminService {
     };
   }
 
-  // Desactivar una cuenta no borra datos: solo le impide iniciar sesión y renovar tokens.
+  // Al desactivar una cuenta no borro datos: le impido iniciar sesión y revoco sus refresh tokens.
   rpc UpdateUserStatus(UpdateUserStatusRequest) returns (UpdateUserStatusResponse) {
     option (kinesiapp.common.v1.access) = {
       roles: [USER_ROLE_ADMIN]

@@ -8,7 +8,7 @@ import "kinesiapp/common/v1/identity.proto";
 
 // Chat sobre un análisis procesado (ANALYSIS_NOT_PROCESSED si todavía no lo está). Es para quien entrena:
 // el deportista y su coach. El admin administra, no conversa sobre análisis.
-// El backend guarda los mensajes; el prompt lo arma el servicio de IA.
+// Guardo los mensajes; el prompt lo arma el servicio de IA.
 service ChatService {
   rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse) {
     option (kinesiapp.common.v1.access) = {

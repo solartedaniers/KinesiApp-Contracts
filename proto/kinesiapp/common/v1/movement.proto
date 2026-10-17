@@ -38,7 +38,7 @@ message AnalysisProgress {
   int32 frames_total = 3;
 }
 
-// Nivel según los cortes del modelo de riesgo. Lo calcula el servidor para que el frontend no
+// Nivel según los cortes del modelo de riesgo. Lo calculo en el servidor para que el frontend no
 // replique los umbrales.
 enum RiskLevel {
   RISK_LEVEL_UNSPECIFIED = 0;
@@ -53,7 +53,6 @@ enum JointAngle {
   JOINT_ANGLE_TRUNK_INCLINATION = 2;
 }
 
-// Un ángulo medido en un frame.
 message JointAngleSample {
   JointAngle joint = 1;
   double angle_degrees = 2;
@@ -119,7 +118,7 @@ message Repetition {
   repeated RepetitionScore signal_scores = 5;
 }
 
-// Resultado completo del modelo de riesgo. Reemplaza al JSON libre risk_details.
+// Resultado completo del modelo de riesgo.
 message RiskAssessment {
   // De 0 a 1.
   double risk_score = 1;

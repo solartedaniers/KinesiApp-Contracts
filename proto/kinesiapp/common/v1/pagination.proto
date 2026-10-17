@@ -4,7 +4,7 @@ package kinesiapp.common.v1;
 
 // Paginación por cursor: el cliente nunca arma offsets, solo devuelve el token que recibió.
 message PageRequest {
-  // Máximo de elementos por página. Con 0 el servidor usa su valor por defecto y nunca pasa su máximo.
+  // Máximo de elementos por página. Con 0 uso el valor por defecto, y nunca paso del máximo.
   int32 page_size = 1;
   // Token de PageResponse.next_page_token; vacío para pedir la primera página.
   string page_token = 2;

@@ -4,10 +4,10 @@ package kinesiapp.ai.v1;
 
 import "kinesiapp/common/v1/ai_state.proto";
 
-// Calentamiento del servicio de IA. Complementa a grpc.health.v1.Health: health dice si el proceso
+// Lo uso junto a grpc.health.v1.Health: health dice si el proceso
 // responde y WarmUp, si los modelos ya están cargados.
 service AiLifecycleService {
-  // Empieza a cargar MediaPipe y YOLO si todavía no están en memoria y responde sin esperar a que termine.
+  // Empiezo a cargar MediaPipe y YOLO si todavía no están en memoria y respondo sin esperar a que termine.
   // Idempotente: llamarlo muchas veces no carga los modelos dos veces.
   rpc WarmUp(WarmUpRequest) returns (WarmUpResponse);
 }

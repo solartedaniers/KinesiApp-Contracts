@@ -26,7 +26,7 @@ service ManagedAthleteService {
     };
   }
 
-  // Borra también sus análisis, sus videos y su avatar del bucket.
+  // Borro también sus análisis, sus videos y su avatar del bucket.
   rpc DeleteManagedAthlete(DeleteManagedAthleteRequest) returns (DeleteManagedAthleteResponse) {
     option (kinesiapp.common.v1.access) = {
       roles: [USER_ROLE_COACH]

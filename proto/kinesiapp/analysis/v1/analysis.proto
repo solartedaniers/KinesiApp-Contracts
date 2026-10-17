@@ -36,8 +36,8 @@ service AnalysisService {
     };
   }
 
-  // Server streaming: reemplaza el polling. Emite el progreso mientras el análisis corre y termina con un
-  // último mensaje con el análisis ya PROCESSED o FAILED. Si ya había terminado, lo emite de inmediato y cierra.
+  // Uso server streaming en vez de polling: emito el progreso mientras el análisis corre y cierro con un
+  // último mensaje con el análisis ya PROCESSED o FAILED. Si ya había terminado, lo emito de inmediato y cierro.
   rpc WatchAnalysis(WatchAnalysisRequest) returns (stream WatchAnalysisResponse);
 
   // El análisis completo, con las series de ángulos y el resultado de riesgo.
@@ -53,14 +53,14 @@ service AnalysisService {
     };
   }
 
-  // Borra el análisis, sus mediciones, su conversación y su video del bucket.
+  // Borro el análisis, sus mediciones, su conversación y su video del bucket.
   rpc DeleteAnalysis(DeleteAnalysisRequest) returns (DeleteAnalysisResponse);
 
   // URL firmada de vida corta para reproducir el video; el bucket atiende Range, así se puede adelantar.
   rpc GetVideoPlaybackUrl(GetVideoPlaybackUrlRequest) returns (GetVideoPlaybackUrlResponse);
 }
 
-// Lo que muestran los listados.
+// Lo que muestro en los listados, sin las series de ángulos.
 message AnalysisSummary {
   int64 id = 1 [jstype = JS_STRING];
   int64 athlete_id = 2 [jstype = JS_STRING];

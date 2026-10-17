@@ -9,12 +9,12 @@ import "kinesiapp/common/v1/identity.proto";
 // Servicio técnico del backend. Lo uso para comprobar de punta a punta que el transporte
 // (Next.js → gRPC-Web → Envoy → grpcio) funciona antes de montar los servicios de dominio.
 service SystemService {
-  // Devuelve el mismo mensaje que recibe, con la hora del servidor.
+  // Devuelvo el mismo mensaje que recibo, con la hora del servidor.
   rpc Ping(PingRequest) returns (PingResponse) {
     option (kinesiapp.common.v1.access) = {public: true};
   }
 
-  // Los límites y reglas que el cliente valida antes de enviar, con los mismos valores que aplica el
+  // Los límites y reglas que el cliente valida antes de enviar, con los mismos valores que aplico en el
   // servidor. Así el frontend no los repite en su código. Es igual para todos y se puede cachear.
   rpc GetClientPolicy(GetClientPolicyRequest) returns (GetClientPolicyResponse) {
     option (kinesiapp.common.v1.access) = {public: true};
@@ -26,14 +26,14 @@ service SystemService {
 }
 
 message PingRequest {
-  // Texto libre que el servidor devuelve tal cual.
+  // Texto libre que devuelvo tal cual.
   string message = 1;
 }
 
 message PingResponse {
   // El mismo texto de PingRequest.message.
   string message = 1;
-  // Momento en que el servidor atendió la llamada.
+  // Momento en que atendí la llamada.
   google.protobuf.Timestamp server_time = 2;
 }
 
@@ -69,7 +69,7 @@ enum PasswordRequirement {
 message PasswordPolicy {
   int32 min_length = 1;
   int32 max_length = 2;
-  // Cada clase de caracter debe aparecer al menos una vez, en el orden en que se informan las que faltan.
+  // Cada clase de caracter debe aparecer al menos una vez, en el orden en que informo las que faltan.
   repeated PasswordRequirement requirements = 3;
 }
 

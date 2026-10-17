@@ -6,7 +6,7 @@ import "kinesiapp/common/v1/movement.proto";
 
 // Servicio interno de IA: solo lo llama el backend, por gRPC nativo en la red privada de Render. No pasa
 // por Envoy ni lleva token de usuario, así que la opción access no aplica a este paquete.
-// La salud del proceso se consulta con el estándar grpc.health.v1.Health.
+// La salud del proceso la expongo con el estándar grpc.health.v1.Health.
 
 // Video → pose (YOLO + MediaPipe) → ángulos → repeticiones → riesgo.
 service MovementAnalysisService {

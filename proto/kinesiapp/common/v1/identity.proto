@@ -23,6 +23,6 @@ message AccessPolicy {
 }
 
 extend google.protobuf.MethodOptions {
-  // 50000-99999 es el rango reservado para extensiones propias de una organización.
+  // Uso el rango 50000-99999, reservado para extensiones propias de una organización.
   AccessPolicy access = 50001;
 }
