@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package kinesiapp.common.v1;
+
+// Autor de un mensaje del chat. Lo comparten el dominio de chat (lo que se guarda) y el de IA (el historial).
+enum ChatRole {
+  CHAT_ROLE_UNSPECIFIED = 0;
+  CHAT_ROLE_USER = 1;
+  CHAT_ROLE_ASSISTANT = 2;
+}

@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package kinesiapp.common.v1;
+
+// Estado del servicio de IA, para el aviso "IA despertando" / "IA activada".
+enum AiState {
+  AI_STATE_UNSPECIFIED = 0;
+  // El proceso responde pero todavía está cargando MediaPipe y YOLO.
+  AI_STATE_WARMING_UP = 1;
+  AI_STATE_READY = 2;
+}
