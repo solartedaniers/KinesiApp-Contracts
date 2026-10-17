@@ -1,0 +1,91 @@
+syntax = "proto3";
+
+package kinesiapp.chat.v1;
+
+import "google/protobuf/timestamp.proto";
+import "kinesiapp/common/v1/chat.proto";
+import "kinesiapp/common/v1/identity.proto";
+
+// Chat sobre un análisis procesado (ANALYSIS_NOT_PROCESSED si todavía no lo está). Es para quien entrena:
+// el deportista y su coach. El admin administra, no conversa sobre análisis.
+// El backend guarda los mensajes; el prompt lo arma el servicio de IA.
+service ChatService {
+  rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [
+        USER_ROLE_ATHLETE,
+        USER_ROLE_COACH
+      ]
+    };
+  }
+
+  // La primera explicación del resultado, en streaming para que el texto aparezca mientras se genera.
+  // Idempotente: si la conversación ya empezó, emito la explicación guardada en un solo mensaje y cierro,
+  // sin volver a llamar al modelo.
+  rpc StartConversation(StartConversationRequest) returns (stream StartConversationResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [
+        USER_ROLE_ATHLETE,
+        USER_ROLE_COACH
+      ]
+    };
+  }
+
+  // Una pregunta y su respuesta en streaming. Si se pasa del límite de mensajes, respondo
+  // RESOURCE_EXHAUSTED con CHAT_RATE_LIMITED antes de guardar nada. Si la IA falla después de guardar la
+  // pregunta, el stream termina con UNAVAILABLE (ASSISTANT_UNAVAILABLE) y la pregunta queda guardada:
+  // cuenta para el límite, así nadie lo esquiva provocando fallos.
+  rpc SendMessage(SendMessageRequest) returns (stream SendMessageResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [
+        USER_ROLE_ATHLETE,
+        USER_ROLE_COACH
+      ]
+    };
+  }
+}
+
+message ChatMessage {
+  int64 id = 1;
+  kinesiapp.common.v1.ChatRole role = 2;
+  string content = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
+message ListMessagesRequest {
+  int64 analysis_id = 1;
+}
+
+message ListMessagesResponse {
+  // En orden de creación.
+  repeated ChatMessage messages = 1;
+}
+
+message StartConversationRequest {
+  int64 analysis_id = 1;
+}
+
+message StartConversationResponse {
+  oneof event {
+    // Fragmento de texto nuevo; el cliente los concatena en orden.
+    string text_delta = 1;
+    // Siempre el último mensaje: la explicación completa ya guardada.
+    ChatMessage assistant_message = 2;
+  }
+}
+
+message SendMessageRequest {
+  int64 analysis_id = 1;
+  // Hasta el máximo de caracteres de SystemService.GetClientPolicy.
+  string content = 2;
+}
+
+message SendMessageResponse {
+  oneof event {
+    // Siempre el primer mensaje: la pregunta ya guardada, para mostrarla con su id sin esperar la respuesta.
+    ChatMessage user_message = 1;
+    string text_delta = 2;
+    // Siempre el último mensaje: la respuesta completa ya guardada.
+    ChatMessage assistant_message = 3;
+  }
+}
