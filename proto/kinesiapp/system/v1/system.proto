@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package kinesiapp.system.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// Servicio técnico del backend. Lo uso para comprobar de punta a punta que el transporte
+// (Next.js → gRPC-Web → Envoy → grpcio) funciona antes de montar los servicios de dominio.
+service SystemService {
+  // Devuelve el mismo mensaje que recibe, con la hora del servidor.
+  rpc Ping(PingRequest) returns (PingResponse);
+}
+
+message PingRequest {
+  // Texto libre que el servidor devuelve tal cual.
+  string message = 1;
+}
+
+message PingResponse {
+  // El mismo texto de PingRequest.message.
+  string message = 1;
+  // Momento en que el servidor atendió la llamada.
+  google.protobuf.Timestamp server_time = 2;
+}
