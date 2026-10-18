@@ -60,6 +60,8 @@ enum ErrorReason {
   ERROR_REASON_NO_MOVEMENT_DETECTED = 32; // FAILED_PRECONDITION
   // El servicio de IA no respondió (dormido, caído o sin memoria).
   ERROR_REASON_AI_UNAVAILABLE = 33; // UNAVAILABLE
+  // La IA ya está corriendo el máximo de análisis simultáneos; el backend reintenta más tarde.
+  ERROR_REASON_AI_BUSY = 36; // RESOURCE_EXHAUSTED
 
   // Chat.
   ERROR_REASON_CHAT_RATE_LIMITED = 34; // RESOURCE_EXHAUSTED
