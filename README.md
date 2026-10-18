@@ -23,7 +23,7 @@ Trabajo contract-first: primero diseño el `.proto`, después cada repo genera s
 | `kinesiapp.team.v1` | `TeamService` | Frontend → backend |
 | `kinesiapp.analysis.v1` | `AnalysisService` | Frontend → backend |
 | `kinesiapp.chat.v1` | `ChatService` | Frontend → backend |
-| `kinesiapp.ai.v1` | `MovementAnalysisService`, `AssistantService`, `AiLifecycleService` | Backend → IA (interno) |
+| `kinesiapp.ai.v1` | `MovementAnalysisService`, `AssistantService`, `AiLifecycleService` | Backend → IA (Envoy + gRPC-Web, con secreto compartido) |
 
 Un dominio nunca importa mensajes de otro; solo de `common`. Así cualquiera puede desplegarse aparte.
 
