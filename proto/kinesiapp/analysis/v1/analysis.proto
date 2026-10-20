@@ -46,7 +46,8 @@ service AnalysisService {
   // Los análisis de un deportista, del más reciente al más antiguo y sin las series de ángulos.
   rpc ListAthleteAnalyses(ListAthleteAnalysesRequest) returns (ListAthleteAnalysesResponse);
 
-  // Los análisis de todos los deportistas que entrena o gestiona el coach que llama.
+  // Los análisis de todos los deportistas que entrena o gestiona el coach que llama. Con team_id me quedo solo con
+  // los de ese equipo; si el equipo no existe o no es suyo respondo NOT_FOUND.
   rpc ListCoachedAnalyses(ListCoachedAnalysesRequest) returns (ListCoachedAnalysesResponse) {
     option (kinesiapp.common.v1.access) = {
       roles: [USER_ROLE_COACH]
@@ -145,6 +146,7 @@ message ListAthleteAnalysesResponse {
 
 message ListCoachedAnalysesRequest {
   kinesiapp.common.v1.PageRequest page = 1;
+  optional int64 team_id = 2 [jstype = JS_STRING];
 }
 
 message ListCoachedAnalysesResponse {
