@@ -29,9 +29,10 @@ message AthleteProfile {
 // No guardo la edad: siempre la derivo de birth_date.
 message Biometrics {
   Gender gender = 1;
-  // Mayor que 0 y hasta 300.
+  // Dentro del rango de SystemService.GetClientPolicy (BiometricsPolicy); fuera de él, INVALID_ARGUMENT
+  // con una violación en el campo.
   double height_cm = 2;
-  // Mayor que 0 y hasta 400.
+  // Dentro del rango de SystemService.GetClientPolicy (BiometricsPolicy).
   double weight_kg = 3;
   // En el pasado y con la edad dentro del rango de SystemService.GetClientPolicy.
   kinesiapp.common.v1.CalendarDate birth_date = 4;

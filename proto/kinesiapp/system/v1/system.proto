@@ -49,6 +49,16 @@ message GetClientPolicyResponse {
   int32 athlete_min_age_years = 5;
   int32 athlete_max_age_years = 6;
   int32 chat_message_max_chars = 7;
+  BiometricsPolicy biometrics = 8;
+}
+
+// Rangos realistas de la ficha física: atrapan unidades equivocadas (una estatura en metros, un peso en
+// libras) antes de que deformen las métricas. Los extremos son inclusivos.
+message BiometricsPolicy {
+  double min_height_cm = 1;
+  double max_height_cm = 2;
+  double min_weight_kg = 3;
+  double max_weight_kg = 4;
 }
 
 message VideoPolicy {
