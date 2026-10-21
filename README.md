@@ -52,7 +52,7 @@ Cada repo (`KinesiApp-Backend`, `KinesiApp-Frontend`, `KinesiApp_IA`) agrega est
 
 ```sh
 git submodule add https://github.com/solartedaniers/KinesiApp-Contracts.git contracts
-git -C contracts checkout v0.9.0
+git -C contracts checkout v0.10.0
 ```
 
 Para subir de versión, cada repo mueve el submódulo al tag nuevo y regenera:
@@ -66,8 +66,8 @@ Para subir de versión, cada repo mueve el submódulo al tag nuevo y regenera:
    ```sh
    buf format -d          # sin diferencias
    buf lint
-   buf breaking --against ".git#tag=v0.8.0"   # contra el último tag publicado
+   buf breaking --against ".git#tag=v0.10.0"   # contra el último tag publicado
    ```
 2. Solo agrego campos, mensajes o RPC. No renumero ni borro campos, para que los clientes viejos sigan funcionando. Si algo deja de usarse, lo marco `reserved`.
-3. Hago commit, creo el tag semver siguiente y lo subo (`git tag v0.9.0 && git push --tags`). Este es el único repo donde trabajo directo en `main`.
+3. Hago commit, creo el tag semver siguiente y lo subo (por ejemplo `git tag v0.11.0 && git push --tags`). Este es el único repo donde trabajo directo en `main`.
 4. Solo después implemento el cambio en el backend, la IA o el frontend.
