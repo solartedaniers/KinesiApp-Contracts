@@ -4,6 +4,7 @@ package kinesiapp.team.v1;
 
 import "google/protobuf/timestamp.proto";
 import "kinesiapp/common/v1/identity.proto";
+import "kinesiapp/common/v1/storage.proto";
 
 // Equipos para agrupar deportistas. El coach gestiona los suyos y el admin los de cualquiera.
 service TeamService {
@@ -74,6 +75,36 @@ service TeamService {
       ]
     };
   }
+
+  // Mismo flujo de dos pasos que el avatar: pido la URL firmada, el navegador sube directo al bucket
+  // privado de imágenes y confirmo. Al confirmar compruebo tamaño, tipo y contenido, y reemplazo el logo anterior.
+  rpc CreateTeamLogoUpload(CreateTeamLogoUploadRequest) returns (CreateTeamLogoUploadResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [
+        USER_ROLE_COACH,
+        USER_ROLE_ADMIN
+      ]
+    };
+  }
+
+  rpc ConfirmTeamLogoUpload(ConfirmTeamLogoUploadRequest) returns (ConfirmTeamLogoUploadResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [
+        USER_ROLE_COACH,
+        USER_ROLE_ADMIN
+      ]
+    };
+  }
+
+  // Idempotente: sin logo, el equipo vuelve a su emblema con las iniciales.
+  rpc DeleteTeamLogo(DeleteTeamLogoRequest) returns (DeleteTeamLogoResponse) {
+    option (kinesiapp.common.v1.access) = {
+      roles: [
+        USER_ROLE_COACH,
+        USER_ROLE_ADMIN
+      ]
+    };
+  }
 }
 
 message Team {
@@ -82,6 +113,8 @@ message Team {
   int64 owner_id = 3 [jstype = JS_STRING];
   repeated int64 athlete_ids = 4 [jstype = JS_STRING];
   google.protobuf.Timestamp created_at = 5;
+  // URL de lectura de vida corta; ausente si el equipo no tiene logo.
+  optional kinesiapp.common.v1.SignedUrl logo = 6;
 }
 
 message ListTeamsRequest {}
@@ -137,5 +170,33 @@ message RemoveTeamMemberRequest {
 }
 
 message RemoveTeamMemberResponse {
+  Team team = 1;
+}
+
+message CreateTeamLogoUploadRequest {
+  int64 team_id = 1 [jstype = JS_STRING];
+  kinesiapp.common.v1.ImageContentType content_type = 2;
+  int64 content_length = 3;
+}
+
+message CreateTeamLogoUploadResponse {
+  string upload_id = 1;
+  kinesiapp.common.v1.UploadTarget target = 2;
+}
+
+message ConfirmTeamLogoUploadRequest {
+  int64 team_id = 1 [jstype = JS_STRING];
+  string upload_id = 2;
+}
+
+message ConfirmTeamLogoUploadResponse {
+  Team team = 1;
+}
+
+message DeleteTeamLogoRequest {
+  int64 team_id = 1 [jstype = JS_STRING];
+}
+
+message DeleteTeamLogoResponse {
   Team team = 1;
 }
