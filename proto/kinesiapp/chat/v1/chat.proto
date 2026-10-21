@@ -34,7 +34,9 @@ service ChatService {
   // Una pregunta y su respuesta en streaming. Si se pasa del límite de mensajes, respondo
   // RESOURCE_EXHAUSTED con CHAT_RATE_LIMITED antes de guardar nada. Si la IA falla después de guardar la
   // pregunta, el stream termina con UNAVAILABLE (ASSISTANT_UNAVAILABLE) y la pregunta queda guardada:
-  // cuenta para el límite, así nadie lo esquiva provocando fallos.
+  // cuenta para el límite, así nadie lo esquiva provocando fallos. Si el proveedor agotó su cuota, el
+  // stream termina con RESOURCE_EXHAUSTED (ASSISTANT_BUSY o ASSISTANT_DAILY_LIMIT), también con la pregunta
+  // guardada.
   rpc SendMessage(SendMessageRequest) returns (stream SendMessageResponse) {
     option (kinesiapp.common.v1.access) = {
       roles: [

@@ -66,4 +66,8 @@ enum ErrorReason {
   // Chat.
   ERROR_REASON_CHAT_RATE_LIMITED = 34; // RESOURCE_EXHAUSTED
   ERROR_REASON_ASSISTANT_UNAVAILABLE = 35; // UNAVAILABLE
+  // Los dos modelos del asistente agotaron su cuota del proveedor. BUSY es la cuota por minuto (vale
+  // reintentar en un minuto); DAILY_LIMIT es la diaria (hasta que el proveedor la reinicie).
+  ERROR_REASON_ASSISTANT_BUSY = 37; // RESOURCE_EXHAUSTED
+  ERROR_REASON_ASSISTANT_DAILY_LIMIT = 38; // RESOURCE_EXHAUSTED
 }

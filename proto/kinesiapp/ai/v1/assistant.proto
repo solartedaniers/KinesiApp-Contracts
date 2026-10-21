@@ -9,7 +9,9 @@ import "kinesiapp/common/v1/movement.proto";
 // Asistente que explica un análisis. El prompt (instrucciones, catálogo de patrones, recorte del historial)
 // lo armo aquí; el backend solo manda datos estructurados y guarda lo que vuelve. Nunca recibo el video,
 // nombres, correos ni la fecha de nacimiento.
-// Si el proveedor del LLM falla, el stream termina con UNAVAILABLE y reason ASSISTANT_UNAVAILABLE.
+// Si el proveedor del LLM falla, el stream termina con UNAVAILABLE y reason ASSISTANT_UNAVAILABLE. Si los
+// dos modelos agotaron su cuota, termina con RESOURCE_EXHAUSTED y reason ASSISTANT_BUSY (por minuto) o
+// ASSISTANT_DAILY_LIMIT (diaria). En ambos casos ya probé el modelo de respaldo: reintentar enseguida no sirve.
 service AssistantService {
   // La primera explicación del resultado, en streaming.
   rpc ExplainAnalysis(ExplainAnalysisRequest) returns (stream ExplainAnalysisResponse);
