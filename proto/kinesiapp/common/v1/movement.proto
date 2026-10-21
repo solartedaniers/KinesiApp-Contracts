@@ -74,6 +74,12 @@ enum RiskDirection {
   RISK_DIRECTION_LOWER_IS_RISKIER = 2;
 }
 
+// Rango de un ángulo; un extremo ausente significa que el modelo no pone límite de ese lado.
+message AngleRange {
+  optional double low_degrees = 1;
+  optional double high_degrees = 2;
+}
+
 message AngleSummary {
   double median_degrees = 1;
   double min_degrees = 2;

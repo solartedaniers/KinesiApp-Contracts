@@ -74,6 +74,13 @@ message AnalysisSummary {
   optional string dominant_risk_pattern = 8;
   // Solo en FAILED: por qué falló (VIDEO_UNREADABLE, NO_MOVEMENT_DETECTED, AI_UNAVAILABLE...).
   kinesiapp.common.v1.ErrorReason failure_reason = 9;
+  // Solo en PROCESSED y si la IA midió la rodilla: mediana de los picos de flexión por repetición, el
+  // mismo valor que puntúa el modelo de riesgo. Uso la mediana porque el máximo escondería las
+  // repeticiones rígidas del salto.
+  optional double knee_median_peak_degrees = 10;
+  // Solo en PROCESSED: rango sin riesgo de la rodilla según los umbrales con que la IA puntuó este
+  // análisis. Ausente si el modelo no tiene señales de rodilla para el movimiento.
+  optional kinesiapp.common.v1.AngleRange knee_target = 11;
 }
 
 message Analysis {
