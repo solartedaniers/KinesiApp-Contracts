@@ -11,6 +11,8 @@ import "kinesiapp/common/v1/movement.proto";
 // La salud del proceso la expongo con el estándar grpc.health.v1.Health.
 
 // Video → pose (YOLO + MediaPipe) → ángulos → repeticiones → riesgo.
+// La vista de la cámara (lateral, frontal o no concluyente) la detecto con la pose y decide qué mido: de lado,
+// flexión de rodilla y tronco; de frente, el valgo de cada rodilla. Va en risk_assessment.camera_view.
 service MovementAnalysisService {
   // Server streaming porque el análisis tarda decenas de segundos: el backend reenvía el progreso a
   // AnalysisService.WatchAnalysis. Los errores cierran el stream con su status code:

@@ -51,6 +51,35 @@ enum JointAngle {
   JOINT_ANGLE_UNSPECIFIED = 0;
   JOINT_ANGLE_KNEE_FLEXION = 1;
   JOINT_ANGLE_TRUNK_INCLINATION = 2;
+  // Ángulo de proyección en el plano frontal (FPPA) entre muslo y pierna. Positivo: la rodilla se va
+  // hacia adentro (valgo); negativo: hacia afuera. Solo se mide con la cámara de frente.
+  JOINT_ANGLE_KNEE_VALGUS = 3;
+}
+
+// Lado del cuerpo del deportista, no de la imagen.
+enum BodySide {
+  BODY_SIDE_UNSPECIFIED = 0;
+  BODY_SIDE_LEFT = 1;
+  BODY_SIDE_RIGHT = 2;
+}
+
+// Desde dónde grabó la cámara. Lo detecta la IA con la pose; el usuario no lo declara.
+enum CameraView {
+  // Análisis anteriores a la detección: todos se analizaron como de lado.
+  CAMERA_VIEW_UNSPECIFIED = 0;
+  // Se mide la flexión de rodilla y la inclinación del tronco.
+  CAMERA_VIEW_SIDE = 1;
+  // Se mide el valgo de cada rodilla.
+  CAMERA_VIEW_FRONT = 2;
+  // Diagonal o dudosa: mido lo de la vista lateral y aviso que el valgo no se midió.
+  CAMERA_VIEW_INCONCLUSIVE = 3;
+}
+
+// Avisos sobre la calidad del análisis; el texto lo pone el frontend.
+enum AnalysisWarning {
+  ANALYSIS_WARNING_UNSPECIFIED = 0;
+  // La vista no fue claramente lateral ni frontal: los ángulos son aproximados y el valgo no se midió.
+  ANALYSIS_WARNING_CAMERA_VIEW_INCONCLUSIVE = 1;
 }
 
 message JointAngleSample {
@@ -58,6 +87,38 @@ message JointAngleSample {
   double angle_degrees = 2;
   // Milisegundos desde el inicio del video.
   int32 frame_timestamp_ms = 3;
+  // Solo en las articulaciones que se miden por pierna (el valgo).
+  BodySide side = 4;
+}
+
+// Puntos del cuerpo que viajan en los fotogramas clave.
+enum BodyLandmark {
+  BODY_LANDMARK_UNSPECIFIED = 0;
+  BODY_LANDMARK_LEFT_SHOULDER = 1;
+  BODY_LANDMARK_RIGHT_SHOULDER = 2;
+  BODY_LANDMARK_LEFT_HIP = 3;
+  BODY_LANDMARK_RIGHT_HIP = 4;
+  BODY_LANDMARK_LEFT_KNEE = 5;
+  BODY_LANDMARK_RIGHT_KNEE = 6;
+  BODY_LANDMARK_LEFT_ANKLE = 7;
+  BODY_LANDMARK_RIGHT_ANKLE = 8;
+  BODY_LANDMARK_LEFT_HEEL = 9;
+  BODY_LANDMARK_RIGHT_HEEL = 10;
+  BODY_LANDMARK_LEFT_FOOT_INDEX = 11;
+  BODY_LANDMARK_RIGHT_FOOT_INDEX = 12;
+}
+
+message Keypoint {
+  BodyLandmark landmark = 1;
+  // Coordenadas normalizadas al cuadro del video (0 a 1); y crece hacia abajo.
+  double x = 2;
+  double y = 3;
+}
+
+// La pose en el instante de un pico de riesgo, para dibujar el esqueleto sobre el video.
+message PoseKeyframe {
+  int32 timestamp_ms = 1;
+  repeated Keypoint keypoints = 2;
 }
 
 // Cómo se encontró una repetición dentro del video.
@@ -66,6 +127,8 @@ enum DetectionMethod {
   DETECTION_METHOD_LANDING = 1;
   DETECTION_METHOD_KNEE_BOTTOM = 2;
   DETECTION_METHOD_TRUNK_HINGE = 3;
+  // Punto más bajo de la cadera: la sentadilla vista de frente, donde la flexión de rodilla no se mide.
+  DETECTION_METHOD_HIP_BOTTOM = 4;
 }
 
 enum RiskDirection {
@@ -97,6 +160,8 @@ message RiskSignal {
   // Ausente si el ángulo no se pudo medir en ninguna repetición.
   optional AngleSummary measured = 6;
   optional double score_median = 7;
+  // Pierna medida: la del valgo o, de lado, la más visible para la cámara. Sin lado en el tronco.
+  BodySide side = 8;
 }
 
 message RiskPattern {
@@ -112,6 +177,10 @@ message RepetitionScore {
   // Ausente si no se pudo calcular (ángulo no medido).
   optional double score = 2;
   optional double measured_degrees = 3;
+  // Solo en las señales: la pierna medida y el instante del pico dentro de la repetición, que apunta a
+  // uno de los keyframes de la repetición.
+  BodySide side = 4;
+  optional int32 peak_ms = 5;
 }
 
 message Repetition {
@@ -122,6 +191,8 @@ message Repetition {
   repeated RepetitionScore pattern_scores = 4;
   // Puntaje y ángulo de cada señal en esta repetición.
   repeated RepetitionScore signal_scores = 5;
+  // La pose en cada instante de pico de las señales, sin repetir instantes.
+  repeated PoseKeyframe keyframes = 6;
 }
 
 // Resultado completo del modelo de riesgo.
@@ -133,4 +204,6 @@ message RiskAssessment {
   optional string dominant_pattern = 3;
   repeated RiskPattern patterns = 4;
   repeated Repetition repetitions = 5;
+  CameraView camera_view = 6;
+  repeated AnalysisWarning warnings = 7;
 }
