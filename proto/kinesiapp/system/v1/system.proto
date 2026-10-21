@@ -50,6 +50,15 @@ message GetClientPolicyResponse {
   int32 athlete_max_age_years = 6;
   int32 chat_message_max_chars = 7;
   BiometricsPolicy biometrics = 8;
+  RiskScalePolicy risk_scale = 9;
+}
+
+// Cortes de nivel de riesgo sobre un risk_score de 0 a 1: desde moderate_from es moderado y desde
+// high_from es alto. Cada análisis ya trae su RiskLevel; estos cortes son para lo que el cliente
+// calcula por su cuenta, como promedios, la peor repetición o las bandas de un medidor.
+message RiskScalePolicy {
+  double moderate_from = 1;
+  double high_from = 2;
 }
 
 // Rangos realistas de la ficha física: atrapan unidades equivocadas (una estatura en metros, un peso en
