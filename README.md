@@ -69,5 +69,5 @@ Para subir de versión, cada repo mueve el submódulo al tag nuevo y regenera:
    buf breaking --against ".git#tag=v0.11.0"   # contra el último tag publicado
    ```
 2. Solo agrego campos, mensajes o RPC. No renumero ni borro campos, para que los clientes viejos sigan funcionando. Si algo deja de usarse, lo marco `reserved`.
-3. Hago commit, creo el tag semver siguiente y lo subo (por ejemplo `git tag v0.11.0 && git push --tags`). Este es el único repo donde trabajo directo en `main`.
+3. Hago commit, creo el tag semver siguiente y lo subo (hoy el último es `v0.11.0`, así que el siguiente sería `git tag v0.12.0 && git push origin v0.12.0`). Este es el único repo donde trabajo directo en `main`.
 4. Solo después implemento el cambio en el backend, la IA o el frontend.
