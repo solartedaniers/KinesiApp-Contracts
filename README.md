@@ -262,7 +262,7 @@ Para subir de versión, cada repo mueve el submódulo al tag nuevo y regenera:
 ## Flujo de trabajo
 
 - **Aquí trabajo directo en `main`**, porque el repo nació vacío para esto. Cada cambio publicado es un tag semver nuevo.
-- **Los demás repos trabajan en ramas feature** (`feature/grpc-backend`, `feature/grpc-ai`, `feature/grpc-frontend`) y fusionan a `main` con `--no-ff`.
+- **Los demás repos trabajan en una rama feature corta por cambio:** la fusionan a `main` con `--no-ff` y la borran, local y en GitHub. En cada repo solo queda `main`.
 - **El push a `main` de esos repos despliega a producción:** Render reconstruye el backend y Vercel el frontend.
 - **La IA necesita el `az containerapp update`.** Su push solo construye la imagen en GHCR, y Azure la toma cuando corro `az containerapp update -n kinesiapp-ia -g kinesiapp-rg --image ghcr.io/solartedaniers/kinesiapp-ai:<sha>`.
 - **Las migraciones se corren a mano** desde el backend con Alembic. Un cambio de contrato que necesite una columna nueva va primero a la base y después al código.
